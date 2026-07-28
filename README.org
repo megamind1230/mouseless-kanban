@@ -5,6 +5,9 @@ with Obsidian Kanban boards. Faster and mouseless alternative to the
 Obsidian kanban plugin. Vim-motions inspired — hjkl navigate, HJKL
 move cards, dd/yy/p clipboard, / search, visual selection.
 
+** Screenshots
+[[./screenshots/kanban.png]]
+
 ** Features
 - Keyboard-first navigation (vim-like hjkl / HJKL / gg / G)
 - Edit .md files in Obsidian Kanban format
