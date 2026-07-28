@@ -1,0 +1,359 @@
+* Mouseless Kanban
+** Overview
+A keyboard-centric desktop kanban app that edits .md files compatible
+with Obsidian Kanban boards. Faster and mouseless alternative to the
+Obsidian kanban plugin. Vim-motions inspired — hjkl navigate, HJKL
+move cards, dd/yy/p clipboard, / search, visual selection.
+
+** Features
+- Keyboard-first navigation (vim-like hjkl / HJKL / gg / G)
+- Edit .md files in Obsidian Kanban format
+- Fuzzy file picker (telescope-like) via Ctrl+O
+- Search cards with / (vim-like), n/N for next/prev match
+- Settings page (Ctrl+,) with vault path config
+- Create new boards in vault (Ctrl+Shift+N)
+- Lane management: rename (r), move left/right, delete (e menu)
+- Card editing: i/a to edit, gi to replace, o/O to add below/above
+- Multi-select: space (toggle), v (visual range), batch dd/yy/x/HJKL
+- Move card to top/bottom/lane via command palette (Ctrl+P)
+- Ctrl+d / Ctrl+u for half-page navigation
+- Auto-save with dirty indicator (500ms debounce)
+- Frameless window with drag bar
+- Dark theme (Tokyo Night) / Tokyo Storm / Light themes — configurable in settings
+- Amber lane borders, purple lane titles, green checkboxes
+- Undo with cursor position restore (20 states)
+- Shortcuts manual (? / F1)
+- Drag and drop cards between lanes (mouse fallback)
+- Double-click to edit cards
+- Session restore (remembers last open board)
+- Configurable card counter (pending only, pending/total, total)
+
+** Tech Stack
+| Layer    | Technology           |
+|----------+----------------------|
+| Runtime  | Electron 33+         |
+| Build    | Vite + electron-vite |
+| Language | TypeScript 5.x       |
+| UI       | React 19             |
+| State    | useReducer + Context |
+| Test     | Vitest (planned)     |
+
+** Keyboard Shortcuts
+*** Navigation
+| Key    | Action                     |
+|--------+----------------------------|
+| h      | Move to previous lane      |
+| l      | Move to next lane          |
+| j      | Move to next card          |
+| k      | Move to previous card      |
+| 1-9    | Jump to Nth lane           |
+| gg     | Jump to first card in lane |
+| G      | Jump to last card in lane  |
+| Ctrl+d | Half-page down (5 cards)   |
+| Ctrl+u | Half-page up (5 cards)     |
+
+*** Move Cards (uppercase)
+| Key | Action                     |
+|-----+----------------------------|
+| H   | Move card to previous lane |
+| L   | Move card to next lane     |
+| K   | Move card up               |
+| J   | Move card down             |
+
+*** Lanes
+| Key    | Action                                |
+|--------+---------------------------------------|
+| r      | Rename lane                           |
+| e      | Lane menu (rename, move, delete)      |
+| Ctrl+N | New lane                              |
+| Ctrl+H | Move lane left                        |
+| Ctrl+L | Move lane right                       |
+| za     | Toggle fold / unfold active lane      |
+| zA     | Fold / unfold all lanes               |
+| 1-9    | Jump focus to Nth lane                |
+
+*** Editing
+| Key         | Action                                 |
+|-------------+----------------------------------------|
+| i / a       | Edit focused card / create at end      |
+| gi          | Edit card (replace all text)           |
+| o           | New card below focused card            |
+| O           | New card above focused card            |
+| Shift+Enter | New line while editing                 |
+| Enter       | Finish editing (commit)                |
+| Escape      | Finish editing / deselect / close menu |
+| x           | Toggle checkbox [ ] / [x]             |
+| dd          | Delete card (double-tap d)            |
+| yy          | Copy card (double-tap y)              |
+| p           | Paste card                             |
+| u           | Undo                                   |
+| =           | Sort selected cards alphabetically     |
+| Ctrl+a      | Increment number in card title         |
+| Ctrl+x      | Decrement number in card title         |
+
+*** Selection
+| Key                | Action                                  |
+|--------------------+-----------------------------------------|
+| Space              | Toggle card selection (multi-select)    |
+| v                  | Enter visual mode (range select w/ j/k) |
+| Escape             | Clear selection                         |
+| d / x / yy / p     | Operate on all selected cards           |
+| H / J / K / L      | Move all selected cards                 |
+| =                  | Sort selected cards alphabetically      |
+
+*** Search
+| Key | Action               |
+|-----+----------------------|
+| /   | Search cards          |
+| n   | Next search match     |
+| N   | Previous search match |
+| Esc | Close search          |
+
+*** File / Global
+| Key          | Action                        |
+|--------------+-------------------------------|
+| Ctrl+P       | Command palette               |
+| Ctrl+=       | Zoom in                       |
+| Ctrl+-       | Zoom out                      |
+| Ctrl+0       | Reset zoom                    |
+| Ctrl+O       | Open board (fuzzy finder)     |
+| Ctrl+Shift+N | New board in vault            |
+| Ctrl+N       | New lane                      |
+| Ctrl+,       | Settings (vault, theme, more) |
+| Ctrl+Q       | Quit                          |
+| ? / F1       | Show shortcuts manual         |
+
+*** Command Palette (Ctrl+P)
+| Command                  | Shortcut |
+|--------------------------+----------|
+| Open Board               | Ctrl+O   |
+| New Board in Vault       | Ctrl+N   |
+| Settings                 | Ctrl+,   |
+| Quit                     | Ctrl+Q   |
+| New Lane                 | Ctrl+N   |
+| Rename Lane              | r        |
+| Lane Menu                | e        |
+| Move Lane Left           | Ctrl+H   |
+| Move Lane Right          | Ctrl+L   |
+| Merge Lane Into...       |          |
+| Toggle Fold Lane         | za       |
+| Fold / Unfold All Lanes  | zA       |
+| Delete Lane              |          |
+| Edit Card                | i        |
+| Edit Card (Replace)      | gi       |
+| New Card Below           | o        |
+| New Card Above           | O        |
+| Toggle Checkbox          | x        |
+| Delete Card              | dd       |
+| Paste Card               | p        |
+| Undo                     | u        |
+| Move Card to Top         |          |
+| Move Card to Bottom      |          |
+| Move Card to Lane...     |          |
+| Move Card Up             | K        |
+| Move Card Down           | J        |
+| Move Card to Prev Lane   | H        |
+| Move Card to Next Lane   | L        |
+| Sort Cards Alphabetically| =        |
+| Increment Number         | Ctrl+A   |
+| Decrement Number         | Ctrl+X   |
+| Jump to First Card       | gg       |
+| Jump to Last Card        | G        |
+| Half-Page Down           | Ctrl+D   |
+| Half-Page Up             | Ctrl+U   |
+| Toggle Card Selection    | Space    |
+| Visual Mode              | v        |
+| Clear Selection          | Esc      |
+| Search Cards             | /        |
+| Zoom In                  | Ctrl+=   |
+| Zoom Out                 | Ctrl+-   |
+| Reset Zoom               | Ctrl+0   |
+| Keyboard Shortcuts       | ?        |
+
+** How to Use
+
+1. Install dependencies:
+   #+begin_src bash
+   npm install
+   #+end_src
+
+2. Start in development mode:
+   #+begin_src bash
+   npm run dev
+   #+end_src
+
+3. Set your vault path and open a board:
+   - Press =Ctrl+,= to open settings
+   - Set your Obsidian vault path, pick theme (Tokyo Night / Tokyo Storm / Light)
+   - Choose card counter style (pending only, pending/total, or total)
+   - Toggle session restore (reopens last board on startup)
+   - Press =Ctrl+O= to open the fuzzy file picker
+   - Type to filter, =Enter= to open, =Esc= to cancel
+
+4. Core navigation (vim-style):
+   - =h= / =l= — move between lanes left/right
+   - =j= / =k= — move between cards down/up
+   - =1= through =9= — jump to Nth lane
+   - =gg= — jump to first card in lane
+   - =G= — jump to last card in lane
+   - =Ctrl+d= / =Ctrl+u= — half-page down/up (5 cards)
+
+5. Card editing:
+   - =i= or =a= — edit focused card (or create one if lane is empty)
+   - =gi= — edit card, replacing all text
+   - =o= — new card below focused card
+   - =O= — new card above focused card
+   - =x= — toggle checkbox [ ] / [x]
+   - =dd= — delete card (double-tap d; single d deletes all selected)
+   - =yy= — copy card (double-tap y)
+   - =p= — paste card
+   - =Enter= — finish editing
+   - =Esc= — cancel editing / deselect / close menu
+
+6. Search:
+   - =/= — start search across all cards
+   - Type to filter (real-time matching)
+   - =n= — jump to next match
+   - =N= — jump to previous match
+   - =Esc= — dismiss search
+
+7. Card selection & batch ops:
+   - =Space= — toggle individual card selection (multi-select)
+   - =v= — enter visual mode (range select with j/k)
+   - With cards selected: =d= (delete), =x= (toggle), =yy= (copy), =p= (paste)
+   - With cards selected: =H/J/K/L= (move batch to prev/next lane, up/down)
+   - With cards selected: == = sort alphabetically
+   - =Esc= — clear selection
+
+8. Lane management:
+   - =r= — rename focused lane
+   - =e= — open lane menu (rename, move left/right, delete)
+   - =Ctrl+N= — new lane
+   - =Ctrl+H= / =Ctrl+L= — move lane left / right
+   - =za= — toggle fold / unfold focused lane (collapses to vertical strip)
+   - =zA= — fold / unfold all lanes
+   - Merge lanes via command palette (=Ctrl+P=, search "merge")
+
+9. Command palette:
+   - =Ctrl+P= — open command palette
+   - Type to filter any command
+   - Arrow keys to navigate, =Enter= to execute
+   - All 37+ commands listed with their keyboard shortcuts
+
+10. Save:
+    - Auto-saves after 500ms of inactivity (debounced)
+    - Dirty indicator shown in status bar
+
+11. Shortcuts manual:
+    - =?= or =F1= — open the full keyboard shortcuts reference
+
+12. Create a new board:
+     - =ctrl+shift+n= — opens a name prompt
+     - Type a name, press =Enter=
+     - Board is created in your vault and automatically opened
+
+13. Drag and drop:
+     - Drag any card by mouse to another lane to move it
+     - Drag a selected card to move the entire selection
+     - Drop zone highlights with a dashed border
+
+14. Double-click:
+     - Double-click any card to enter edit mode (same as =i= key)
+
+** NPM Scripts
+| Script              | Command           |
+|---------------------+-------------------|
+| =npm run dev=       | Start in dev mode |
+| =npm run build=     | Production build  |
+| =npm run typecheck= | Type check only   |
+
+** Obsidian Kanban Compatibility
+Reads and writes standard Obsidian Kanban .md format:
+- YAML frontmatter with =kanban-plugin: board=
+- =##= headings as lanes
+- =- [ ]= / =- [x]= as cards
+- Settings in =%% kanban:settings %%= comments
+- Multi-line card content (indented continuation)
+- Preamble lines preserved between lanes
+
+** Logs
+Logs are written to:
+#+begin_src
+~/magnus/mouseless-kanban/logs/YYYY-MM-DD.log
+#+end_src
+Each log entry includes a timestamp. Useful for debugging IPC issues or file I/O errors.
+
+** Comparison
+
+*** Mouseless Kanban vs Obsidian Kanban Plugin
+
+| Dimension       | Mouseless Kanban                          | Obsidian Kanban Plugin                  |
+|-----------------+-------------------------------------------+-----------------------------------------|
+| Input method    | Keyboard-only (vim motions)               | Mouse + keyboard                        |
+| Performance     | Instant (native Electron app)             | Inside Obsidian (heavier startup)       |
+| File format     | Same .md (fully compatible)               | Same .md                                |
+| Multi-select    | Space / v visual mode, batch dd/yy/x/HJKL | Limited (click-drag, no batch ops)      |
+| Search          | Vim-like / with n/N navigation            | Obsidian-wide Ctrl+F (not board-scoped) |
+| Lanes           | Fold, merge, keyboard move (Ctrl+H/L)     | Drag to reorder, no fold/merge          |
+| Cards           | i/a edit, o/O insert, dd delete, yy copy  | Click to edit, drag to reorder          |
+| Command palette | Ctrl+P with 37+ commands                  | No built-in command palette             |
+| Auto-save       | 500ms debounce, dirty indicator           | Manual save (Ctrl+S)                    |
+| Dependency      | Standalone (no Obsidian needed)           | Requires Obsidian                       |
+| Undo            | 20-state history with cursor restore      | No undo                                 |
+| Customization   | 3 themes (Tokyo Night / Storm / Light)    | Plugin ecosystem, CSS snippets, themes  |
+| Platform        | Linux, macOS, Windows (Electron)          | Linux, macOS, Windows, mobile           |
+
+*** Why choose Mouseless Kanban?
+- You prefer keyboard-only workflows and vim-like keybindings
+- You want a lightweight, focused kanban tool without the overhead of a full note-taking app
+- You need fast batch operations (move/delete/toggle multiple cards at once)
+- You edit kanban boards in Obsidian but want a faster editing experience
+
+*** Why choose Obsidian Kanban?
+- You need mobile access
+- You want deep integration with Obsidian's plugin ecosystem
+- You prefer mouse-based drag-and-drop interactions
+- You need advanced features like date-based views or custom card layouts
+
+** License
+GPL 3.0 — see LICENCE file.
+Author: Hassan Ahmad Darwish (NSB)(hassan24641@gmail.com)
+
+** Project Structure
+#+begin_src
+mouseless-kanban/
+├── electron/              # Main process
+│   ├── main.ts            # IPC handlers, settings, window
+│   └── preload.ts         # contextBridge API
+├── src/                   # Renderer
+│   ├── App.tsx            # Root component, wires hooks
+│   ├── main.tsx           # React entry point
+│   ├── store.tsx          # useReducer + undo history
+│   ├── index.css          # Tokyo Night dark theme
+│   ├── core/
+│   │   ├── types.ts       # Board, Lane, Card, BoardAction
+│   │   └── parser.ts      # Obsidian Kanban .md ↔ Board
+│   ├── hooks/
+│   │   ├── useKeys.ts     # Keyboard engine (hjkl/HJKL/dd/yy)
+│   │   └── useFile.ts     # File state, auto-save, vault
+│   └── components/
+│       ├── Board.tsx       # Horizontal lane layout
+│       ├── Lane.tsx        # Card list + rename + lane menu
+│       ├── Card.tsx        # Display/edit mode
+│       ├── StatusBar.tsx   # File name, mode indicator
+│       ├── FuzzyPicker.tsx # Telescope-like file picker
+│       ├── Settings.tsx    # Vault, theme, counter, session config
+│       ├── Prompt.tsx      # Inline input modal
+│       ├── Shortcuts.tsx   # Keyboard shortcuts manual
+│       ├── CommandPalette.tsx # Ctrl+P command palette
+│       ├── LaneMenu.tsx    # Lane context menu
+│       ├── LanePicker.tsx  # Lane selection modal
+│       └── SearchBar.tsx   # / search bar
+├── scripts/
+│   └── dev.mjs            # Dev launcher (Vite + Electron)
+├── plan-todos.org
+├── bugs.org
+├── README.org
+├── changelog.org
+└── LICENCE
+#+end_src

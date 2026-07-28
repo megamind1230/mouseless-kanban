@@ -1,0 +1,45 @@
+{
+  "name": "mouseless-mindmap",
+  "version": "0.1.0",
+  "description": "Keyboard-centric mindmap editor for Obsidian Kanban boards",
+  "main": "out/main/main.js",
+  "scripts": {
+    "dev": "electron-vite dev",
+    "dev:linux": "electron-vite dev --",
+    "dev:direct": "node scripts/dev.mjs",
+    "build": "electron-vite build",
+    "preview": "electron-vite preview",
+    "lint": "eslint src/ electron/",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "keywords": [
+    "electron",
+    "kanban",
+    "keyboard",
+    "mindmap",
+    "obsidian"
+  ],
+  "author": "Hassan <hassan24641@gmail.com>",
+  "license": "GPL-3.0",
+  "type": "commonjs",
+  "devDependencies": {
+    "@testing-library/jest-dom": "^7.0.0",
+    "@testing-library/react": "^16.3.2",
+    "@types/node": "^26.1.2",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "electron": "^43.2.0",
+    "electron-vite": "^5.0.0",
+    "jsdom": "^30.0.0",
+    "typescript": "^7.0.2",
+    "vitest": "^4.1.10"
+  },
+  "dependencies": {
+    "@vitejs/plugin-react": "^4.7.0",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "vite": "^8.1.5"
+  }
+}

@@ -1,0 +1,12 @@
+node_modules/
+dist/
+out/
+.env
+*.log
+.DS_Store
+
+# IDE
+.vscode/
+
+# TypeScript
+*.tsbuildinfo

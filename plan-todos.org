@@ -1,0 +1,153 @@
+* Mouseless Mindmap — Build Plan
+** DONE Phase 1 — Scaffold
+- [X] Create logs dir at ~/magnus/mouseless-mindmap/logs/
+- [X] Create .org files (plan-todos, bugs, README, changelog, LICENCE)
+- [X] Init npm project + install deps (electron, vite, react, typescript)
+- [X] electron-vite config (main + preload + renderer)
+- [X] Basic Electron main process + BrowserWindow
+- [X] Preload script with contextBridge IPC
+- [X] React entry point + App.tsx mount
+- [X] tsconfig (strict mode)
+- [X] Dev script (scripts/dev.mjs) with Linux sandbox flags
+
+** DONE Phase 2 — Model + Parser
+- [X] types.ts: Board, Lane, Card, BoardAction (16 action types)
+- [X] parser.ts: parse(markdown) → Board (Obsidian Kanban format)
+- [X] parser.ts: serialize(Board) → markdown
+- [X] store.tsx: useReducer with undo history (20 states, preserves cursor)
+
+** DONE Phase 3 — File I/O
+- [X] IPC channels: file:open, file:save, file:read, file:list-vault, file:create-in-vault, app:quit
+- [X] Main process: dialog.showOpenDialog + fs read/write
+- [X] useFile.ts hook: open/save state, dirty indicator, vault path
+- [X] Debounced auto-save (500ms idle → write)
+- [X] Ctrl+S immediate save (ref-based, no stale closures)
+
+** DONE Phase 4 — Board UI
+- [X] Board.tsx: horizontal lane layout
+- [X] Lane.tsx: vertical card list, active card highlight, lane rename, lane menu
+- [X] Card.tsx: display mode + edit mode (textarea, Shift+Enter for newlines)
+- [X] StatusBar.tsx: file name, mode, cursor position
+- [X] CSS: dark theme (Tokyo Night), high contrast
+- [X] Frameless window with drag bar
+
+** DONE Phase 5 — Keyboard Engine
+- [X] useKeys.ts: keymap registry, Normal/Insert mode FSM
+- [X] hjkl (lowercase) = navigate lanes/cards
+- [X] HJKL (uppercase) = move cards between lanes/positions
+- [X] i = edit focused card or create new card (lane empty)
+- [X] a = edit focused card (alias for i)
+- [X] gi = edit card with replace mode (clears text)
+- [X] o/O = new card below/above focused card
+- [X] r = rename lane, e = lane menu (rename/move/delete)
+- [X] x = toggle checkbox, dd = delete, yy = copy, p = paste
+- [X] u = undo (preserves cursor position)
+- [X] Ctrl+n = new lane, Ctrl+o = fuzzy open
+- [X] Ctrl+Shift+n = new kanban file in vault
+- [X] Ctrl+, = settings, Ctrl+s = save, Ctrl+q = quit
+- [X] ? / F1 = shortcuts manual
+- [X] Ctrl+p = command palette
+
+** DONE Phase 6 — Settings + Fuzzy Picker
+- [X] Settings.tsx: modal with vault path picker
+- [X] Settings stored in Electron userData/settings.json
+- [X] FuzzyPicker scans vault folder recursively for .md files
+- [X] Shows file name + relative path in results
+- [X] Ctrl+Shift+N creates kanban .md in vault with proper template
+- [X] Prompt.tsx: inline input for board name (replaces prompt())
+
+** DONE Phase 7 — Selection + Multi-Op
+- [X] Space = non-contiguous multi-select (toggle individual cards)
+- [X] v = visual mode (range select with j/k)
+- [X] Esc clears selection
+- [X] Batch dd/x/yy/p/HJKL on selected cards
+- [X] Selection persists after operations until Esc
+- [X] v preserves space-selected cards (merge)
+- [X] Multi-select move for all directions (up/down/prev-lane/next-lane)
+- [X] Clipboard stores Card[] for multi-yank/paste
+
+** DONE Phase 8 — Polish
+- [X] Undo in reducer (with cursor restore)
+- [X] Dirty state indicator
+- [X] Parser preserves preamble lines
+- [X] Parser handles multi-line card content
+- [X] Lane menu (e): rename, move left/right, delete
+- [X] Insert mode blocks all shortcuts except Esc
+- [X] Update all .org files
+- [X] Dev script with Linux sandbox workarounds
+- [X] Fixed O key (was blocked by shiftKey guard)
+- [X] Fixed Shift+J (sent card to bottom instead of swapping)
+- [X] Amber lane border, purple lane titles
+- [X] Squared CSS checkboxes with green fill
+- [X] Selected card visual style (purple tint)
+- [X] Parser round-trip test (Vitest)
+- [X] Unit tests for store reducer
+- [X] remove `ctrl s` cus it's useless
+
+** Phase 9 — Future Features
+*** DONE Navigation
+- [X] gg / G = jump to first/last card in lane
+- [X] expose functions in the cmd palette
+  - [X] move card to top/bottom of lane
+  - [X] move card to specific lane (prompts me to fuzzy find a lane to move the card to)
+- [X] Ctrl+d / Ctrl+u = half-page down/up
+- [X] /  = search cards (like vim search)
+    - [X] n / N = next/previous search match
+
+*** DONE Multi-Select Operations
+- [X] while on selection
+  - [X] single `d` should delete all selected
+  - [X] `x` should toggle checkmark all selected
+  - [X] also later when we add the move card to lane (fuzzy finding lane by name) function (all selected cards should move there too)
+- [X] = sorts selected/highlighted cards alphabetically
+- [X] Ctrl+a / Ctrl+x = increment/decrement number in card title
+
+*** DONE Lane Operations
+- [X] za = toggle fold/unfold lane (collapse lane, show card count, tiny vertical strip)
+- [X] zA = fold all lanes / unfold all lanes
+- [X] Ctrl+l / Ctrl+h = move lane left/right (without menu), and expose them in cmd palette, and update the handbook with them
+- [X] Merge lanes (move all cards from one lane to another)
+- [X] 1-9 = jump focus to Nth lane from left
+- [X] Delete Lane from command palette
+
+** DONE Phase 10: extras
+- [X] Drag-and-drop cards between lanes (mouse fallback)
+- [X] Double-click on card to enter edit mode
+- [X] Session restore (remember last open board)
+- [X] Comprehensive settings page (theme, card counter style, session restore)
+- [X] Three themes: Tokyo Night, Tokyo Storm, Light
+- [X] Configurable card counter style
+- [X] Centered lane layout
+
+** frozen/later
+*** Views & UI
+- [ ] Minimap / overview mode (bird's-eye view of all lanes)
+- [ ] Split view: show two lanes side by side
+- [ ] Card count per lane in status bar
+- [ ] Search/filter bar (live filter cards by text)
+- [ ] Tag support (#tag in card titles, filter by tag)
+- [ ] Due dates / priority markers on cards
+- [ ] Color-coded lanes (configurable per lane)
+- [ ] Custom CSS themes (light mode, high contrast, etc.)
+
+*** File & Vault
+- [ ] Multiple vault support (switch between vaults)
+- [ ] Recent files list (Ctrl+R)
+- [ ] File Watcher: reload when .md changes externally
+- [ ] Export board as PNG/SVG (screenshot)
+- [ ] Import from plain markdown (non-kanban .md files)
+- [ ] Trash / recovery for deleted cards (soft delete)
+
+*** Performance & Polish
+- [ ] Virtual scrolling for lanes with 100+ cards
+- [ ] Smooth animations for card move/delete/paste
+- [ ] Configurable keybindings (keymap config file)
+- [ ] Plugin system for custom commands
+- [ ] i18n / localization support
+
+*** Testing
+- [ ] Parser round-trip test (Vitest)
+- [ ] Unit tests for store reducer (all action types)
+- [ ] Integration tests for keyboard shortcuts
+- [ ] E2E tests with Playwright
+- [ ] CI/CD pipeline (GitHub Actions)

@@ -1,0 +1,136 @@
+* Changelog
+** [2026-07-26] — Project Start
+- Created project structure and .org files
+- Defined architecture: Electron + React + TypeScript
+- Designed keyboard shortcut scheme (vim-like: lowercase=navigate, uppercase=move)
+- Researched Obsidian Kanban .md format
+
+** [2026-07-26] — MVP Built
+- Scaffolded Electron + Vite + React + TypeScript project
+- Implemented Obsidian Kanban .md parser (parse/serialize)
+- Built Board, Lane, Card, StatusBar, FuzzyPicker components
+- Wired keyboard engine: hjkl navigate, HJKL move, dd/yy sequences
+- File I/O via IPC with auto-save (500ms debounce)
+- Dark theme (Tokyo Night palette)
+- All builds passing, TypeScript clean
+
+** [2026-07-27] — Linux Dev Support
+- Added scripts/dev.mjs: Vite + Electron with --no-sandbox flags for Linux
+- Cleaned up electron/main.ts (HW accel off on Linux)
+- Updated all .org files and bugs tracker
+
+** [2026-07-27] — Ponytail Cleanup
+- Removed unused imports, killed dead code
+- Simplified store: history saves {board, activeLane, activeCard} tuples
+- Fixed undo (restores cursor position instead of reset to 0,0)
+- Fixed parser: preserves preamble lines between lanes
+- Fixed parser: handles multi-line card content (indented continuation)
+- Removed frameless window (frame: false), added 6px drag bar
+- Removed unused MOVE_CARD action fields (laneId, cardId)
+
+** [2026-07-27] — Settings + Vault Integration
+- Settings page (Ctrl+,) — vault path stored in Electron userData
+- Fuzzy picker (Ctrl+O) now scans vault folder recursively for .md files
+- Ctrl+Shift+N creates new kanban .md in vault with Obsidian-compatible template
+- Added file:read, file:list-vault, file:create-in-vault, settings:get/save IPC
+- Picker shows file name + relative path in results
+
+** [2026-07-27] — Keyboard Overhaul
+- Enter no longer enters insert mode (i does)
+- i = edit focused card or create new card (when lane empty)
+- o/O = new card below/above focused card
+- Shift+Enter = newline while editing textarea
+- Esc closes all overlays (shortcuts manual, picker, menus)
+- Insert mode blocks all shortcuts except Esc
+- Added ? / F1 for shortcuts manual
+- Added r for lane rename, e for lane menu
+- Lane menu: rename, move left/right, delete lane
+- Replaced prompt() with Prompt.tsx modal (Electron blocks prompt())
+- Ctrl+S fix: ref-based saveNow() — no stale closures, no cancelled writes
+- Added DELETE_LANE, MOVE_LANE, RENAME_LANE actions
+
+** [2026-07-27] — Command Palette
+- Added Ctrl+P command palette (search + execute any command)
+- Commands organized by category: File, Lane, Card, View
+- Each command shows its keyboard shortcut
+- Arrow keys to navigate, Enter to execute, Esc to close
+- Commands.ts defines all available actions (extensible)
+
+** [2026-07-28] — Selection + New Shortcuts
+- Fixed O key (was blocked by shiftKey guard, never reached handler)
+- Added a key (alias for i — edit focused card)
+- Added gi key (edit card with replace mode — clears text)
+- Added space for non-contiguous multi-select (toggle individual cards)
+- Added v for visual mode (range select with j/k)
+- Selection persists after move/toggle/yank until Esc is pressed
+- Batch operations on selected cards: dd, x, yy, p, H/J/K/L
+- Multi-select move supports all directions (up/down/prev-lane/next-lane)
+- v preserves space-selected cards (preVisualIds merge)
+- Fixed Shift+J bug: card went to bottom instead of swapping with next card
+- Clipboard now stores Card[] for multi-yank/paste
+
+** [2026-07-28] — Design Refresh
+- Focused lane border: amber (#f59e0b)
+- Lane title text color: purple (#7c0aed)
+- Squared CSS checkboxes with green fill + checkmark when checked
+- Checked cards: gray title text (no strikethrough, no opacity fade)
+- Selected card style: purple tint background + outline
+
+** [2026-07-28] — Phase 8 Complete
+- Removed Ctrl+S shortcut (auto-save handles persistence)
+- Added 17 new reducer unit tests (selection, batch ops, visual mode)
+- Total test count: 62 (all passing)
+
+** [2026-07-28] — Lane Operations Refinements
+- Renamed zo→za, zO→zA (fold toggle shortcuts)
+- Swapped Ctrl+J→Ctrl+L (move right), Ctrl+K→Ctrl+H (move left)
+- Fixed zA not being captured: rewrote keyboard prefix engine
+  - Prefix checks (g/z) moved before uppercase sections so Shift+A is caught
+  - Separate lastKey/lastTime refs prevent re-render from clearing pending state
+- Folded lanes: 40px vertical column with centered rotated title, card count at bottom
+- Added Delete Lane to command palette
+- Board gap increased from 1px to 5px
+- 69 tests passing, TypeScript clean
+
+** [2026-07-28] — Phase 9: Lane Operations
+- zo: toggle fold/unfold lane (collapses card list, shows count badge)
+- zO: fold all / unfold all lanes
+- Ctrl+j / Ctrl+k: move lane left/right (no menu needed)
+- Merge lanes: command palette entry moves all cards from current lane to target
+- Number keys 1-9: jump focus to Nth lane from left
+- Lane header click unfolds folded lane
+- LanePicker reusable for move-to-lane and merge-lanes
+
+** [2026-07-28] — Phase 9: Multi-Select Operations
+- Single `d` deletes all selected cards (no double-tap needed)
+- Single `x` toggles checkmark on all selected cards
+- `=` sorts selected cards alphabetically (preserves non-selected order)
+- Ctrl+a / Ctrl+x: increment / decrement last number in card title
+- All operations work on single card or batch with selection
+
+** [2026-07-28] — Phase 9: Navigation
+- gg / G: jump to first/last card in lane
+- Ctrl+d / Ctrl+u: half-page down/up (5 cards)
+- /: vim-like search across all cards, with live filtering
+- n / N: next/previous search match
+- Move Card to Top / Move Card to Bottom in command palette
+- Move Card to Lane: fuzzy lane picker for arbitrary lane jumps
+- Search bar UI: fixed bottom bar with match count
+- LanePicker component: modal with fuzzy lane name filtering
+
+** [2026-07-28] — Phase 10: Extras
+- Comprehensive Settings page: vault path, theme picker, card counter style, session restore toggle
+- Three themes: Tokyo Night (default), Tokyo Storm, Light
+- Card counter configurable: pending only (default), pending/total, total only
+- Session restore: remembers last opened board and auto-opens on startup
+- Double-click card to enter edit mode (same as i key)
+- Drag-and-drop cards between lanes (HTML5 DnD, mouse fallback)
+  - Dragging a selected card moves the entire selection
+  - Drop zone visual feedback (dashed accent border)
+- MOVE_CARD_BY_ID reducer action for drag-and-drop
+- Lane centered layout (justify-content: center)
+- 84 tests passing, TypeScript clean
+
+** [2026-07-28] — Zoom Shortcuts
+- Ctrl+= / Ctrl+- / Ctrl+0 for zoom in, zoom out, reset zoom
+- IPC handlers in main process using webContents.setZoomLevel

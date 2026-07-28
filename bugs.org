@@ -1,0 +1,65 @@
+* Bugs Tracker
+** Known Issues
+*** [ ] Command palette doesn't close on outside click
+- File: =src/components/CommandPalette.tsx=
+- Cause: Overlay click closes, but no keyboard shortcut to close without Esc.
+- Minor: Esc works fine, just not discoverable.
+*** [ ] Lane menu doesn't close on outside click
+- File: =src/components/Lane.tsx=
+- Cause: Menu only closes via Esc or clicking an option. No blur/click-outside handler.
+- Fix: Add a click-outside listener or overlay behind the menu.
+
+*** [ ] Lane menu doesn't close when navigating away
+- File: =src/components/Lane.tsx=
+- Cause: =isActive= change hides menu, but if user navigates while menu is open it stays briefly.
+- Fix: Close menu on any navigation key (h/l/j/k) in useKeys.
+
+** Environment Issues
+*** Electron can't launch in this container
+- Symptom: zygote/GPU process crashes, shared memory ESRCH.
+- Cause: Kernel-level IPC namespace restriction — not fixable with Chromium flags.
+- Workaround: Run on a real desktop (Linux X11/Wayland, macOS, Windows).
+- The =npm run dev= script passes =--no-sandbox --disable-gpu= on Linux.
+- Dev script: =node scripts/dev.mjs= handles Vite + Electron with correct flags.
+
+** Fixed
+*** [x] Ctrl+S didn't save file
+- Cause: Stale closure over filePath/board in keyboard handler. Auto-save cleanup cancelled pending writes.
+- Fix: Ctrl+S now calls saveNow() via ref-based hook. Board/filePath read from refs, never stale.
+
+*** [x] Undo went back to lane 0, card 0 always
+- Cause: History only saved board snapshot, not activeLane/activeCard.
+- Fix: History entries now store =\{board, activeLane, activeCard\}= tuples.
+
+*** [x] Parser didn't handle multi-line card content (indented lines)
+- Cause: Only read =^- [ ] text= lines, ignored indented continuation.
+- Fix: Track indent level after a card line, accumulate as multi-line title.
+
+*** [x] Parser didn't preserve lines before first lane or between lanes
+- Cause: Any non-frontmatter, non-lane, non-card line was silently dropped.
+- Fix: Collect "preamble" lines and re-emit them in serialize.
+
+*** [x] Fuzzy picker opened dialog instead of scanning vault folder
+- Fix: Added settings page (Ctrl+,) with vault path config. Picker now scans vault recursively.
+
+*** [x] Ctrl+Shift+N didn't create proper kanban file in vault
+- Fix: Creates =.md= with Obsidian Kanban frontmatter in configured vault path.
+
+*** [x] No settings page for vault path
+- Fix: Settings stored in Electron userData. Ctrl+, opens settings modal with vault path picker.
+
+*** [x] Enter entered insert mode (should be i)
+- Fix: Enter no longer enters insert mode. =i= creates new card or edits focused card.
+
+*** [x] prompt() blocked in Electron with contextIsolation
+- Fix: Replaced with Prompt.tsx modal component.
+
+*** [x] O key (Shift+o) did nothing
+- File: =src/hooks/useKeys.ts=
+- Cause: O was inside a =!e.shiftKey= guard block, so pressing Shift+O never reached it.
+- Fix: Moved O and I to their own =e.shiftKey= block before the lowercase block.
+
+*** [x] Shift+J sent card to bottom instead of swapping with next
+- File: =src/store.tsx=
+- Cause: MOVE_CARD "down" direction did =splice(lane.cards.length, 0, card)= which always appended to end.
+- Fix: Changed to =splice(Math.min(lane.cards.length, cardIdx + 1), 0, card)= to swap with next card.
