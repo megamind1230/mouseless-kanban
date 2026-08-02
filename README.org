@@ -2,8 +2,8 @@
 ** Overview
 A keyboard-centric desktop kanban app that edits .md files compatible
 with Obsidian Kanban boards. Faster and mouseless alternative to the
-Obsidian kanban plugin. Vim-motions inspired — hjkl navigate, HJKL
-move cards, dd/yy/p clipboard, / search, visual selection.
+Obsidian kanban plugin. Vim-motions inspired — hjkl to navigate, HJKL to
+move cards, dd/yy/p for clipboard, / to search and visual selection.
 
 ** Screenshots
 [[./screenshots/kanban.png]]
