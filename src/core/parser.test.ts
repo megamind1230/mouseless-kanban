@@ -36,9 +36,9 @@ describe('parse', () => {
     const todo = board.lanes[0]
     expect(todo.cards).toHaveLength(3)
     expect(todo.cards[0].title).toBe('Buy groceries')
-    expect(todo.cards[0].checked).toBe(false)
+    expect(todo.cards[0].status).toBe('todo')
     expect(todo.cards[1].title).toBe('Write tests')
-    expect(todo.cards[1].checked).toBe(true)
+    expect(todo.cards[1].status).toBe('done')
   })
 
   it('parses multi-line card content', () => {
@@ -94,7 +94,36 @@ kanban-plugin: board
 `
     const board = parse(md)
     expect(board.lanes[0].cards[0].title).toBe('plain card')
-    expect(board.lanes[0].cards[0].checked).toBe(false)
+    expect(board.lanes[0].cards[0].status).toBe('todo')
+  })
+
+  it('parses in-progress cards as - [-] and - [~]', () => {
+    const md = `---
+kanban-plugin: board
+---
+
+## Lane
+
+- [-] working on it
+- [~] also in progress
+`
+    const board = parse(md)
+    expect(board.lanes[0].cards[0].status).toBe('doing')
+    expect(board.lanes[0].cards[1].status).toBe('doing')
+  })
+
+  it('serializes in-progress cards as - [-]', () => {
+    const md = `---
+kanban-plugin: board
+---
+
+## Lane
+
+- [~] task
+`
+    const board = parse(md)
+    const out = serialize(board)
+    expect(out).toContain('- [-] task')
   })
 })
 
@@ -173,7 +202,7 @@ describe('round-trip', () => {
     for (let i = 0; i < board1.lanes.length; i++) {
       for (let j = 0; j < board1.lanes[i].cards.length; j++) {
         expect(board2.lanes[i].cards[j].title).toBe(board1.lanes[i].cards[j].title)
-        expect(board2.lanes[i].cards[j].checked).toBe(board1.lanes[i].cards[j].checked)
+        expect(board2.lanes[i].cards[j].status).toBe(board1.lanes[i].cards[j].status)
       }
     }
   })

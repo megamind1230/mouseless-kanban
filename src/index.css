@@ -14,7 +14,10 @@
   --accent-dim: #3b4261;
   --green: #9ece6a;
   --red: #f7768e;
+  --amber: #f59e0b;
   --border: #3b4261;
+  --scrollbar-thumb: #565f89;
+  --scrollbar-track: #16161e;
 }
 
 .theme-tokyo-storm {
@@ -27,7 +30,10 @@
   --accent-dim: #33415c;
   --green: #9ece6a;
   --red: #db4b4b;
+  --amber: #f59e0b;
   --border: #33415c;
+  --scrollbar-thumb: #565f89;
+  --scrollbar-track: #24283b;
 }
 
 .theme-light {
@@ -40,7 +46,10 @@
   --accent-dim: #dbeafe;
   --green: #16a34a;
   --red: #dc2626;
+  --amber: #d97706;
   --border: #d4d4d4;
+  --scrollbar-thumb: #ffffff;
+  --scrollbar-track: #d4d4d4;
 }
 
 body {
@@ -49,6 +58,32 @@ body {
   color: var(--fg);
   overflow: hidden;
   height: 100vh;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+}
+
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+*::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
+  border-radius: 5px;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 5px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background-color: var(--accent);
 }
 
 #root {
@@ -145,7 +180,7 @@ body {
   transform: translateX(-50%);
   writing-mode: horizontal-tb;
   background: #3b2f1a;
-  color: #f59e0b;
+  color: var(--fg-dim);
   border-radius: 10px;
   font-size: 0.7rem;
   padding: 1px 6px;
@@ -156,10 +191,30 @@ body {
   margin-left: 0.5rem;
   padding: 0.1rem 0.4rem;
   background: #3b2f1a;
-  color: #f59e0b;
+  color: var(--fg-dim);
   border-radius: 10px;
   font-size: 0.75rem;
   font-weight: normal;
+}
+
+.count--pending {
+  color: var(--red);
+}
+
+.count--done {
+  color: var(--green);
+}
+
+.count--total {
+  color: var(--amber);
+}
+
+.count--sep {
+  opacity: 0.5;
+}
+
+.lane-title {
+  overflow-wrap: anywhere;
 }
 
 .lane-header {
@@ -227,7 +282,9 @@ body {
 .lane-cards {
   flex: 1;
   overflow-y: auto;
+  scrollbar-gutter: stable;
   padding: 0.5rem;
+  padding-right: 0.65rem;
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
@@ -254,6 +311,10 @@ body {
 
 .card--checked .card-title {
   color: var(--fg-dim);
+}
+
+.card--doing .card-title {
+  color: var(--amber);
 }
 
 .card-checkbox {
@@ -283,8 +344,27 @@ body {
   transform: rotate(45deg);
 }
 
+.card-checkbox--doing {
+  border-color: var(--amber);
+  position: relative;
+}
+
+.card-checkbox--doing::after {
+  content: '-';
+  position: absolute;
+  left: 2px;
+  top: -3px;
+  font-size: 0.8rem;
+  font-weight: bold;
+  color: var(--amber);
+  line-height: 1;
+}
+
 .card-title {
   flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  word-break: break-word;
   white-space: pre-wrap;
 }
 
@@ -523,6 +603,62 @@ body {
 .settings-option--selected {
   border-color: var(--accent);
   background: var(--accent-dim);
+}
+
+.settings-preview {
+  margin: 0 1rem 0.75rem;
+  padding: 0.75rem;
+  background: var(--bg-dim);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+.settings-preview-lane {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0.75rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-weight: bold;
+}
+
+.settings-preview-title {
+  color: #7c0aed;
+}
+
+.settings-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  padding-top: 0.6rem;
+}
+
+.settings-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.78rem;
+  color: var(--fg-dim);
+}
+
+.settings-legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.settings-legend-dot--red {
+  background: var(--red);
+}
+
+.settings-legend-dot--green {
+  background: var(--green);
+}
+
+.settings-legend-dot--amber {
+  background: var(--amber);
 }
 
 .settings-checkbox-label {

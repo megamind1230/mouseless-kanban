@@ -29,7 +29,12 @@ move cards, dd/yy/p clipboard, / search, visual selection.
 - Drag and drop cards between lanes (mouse fallback)
 - Double-click to edit cards
 - Session restore (remembers last open board)
-- Configurable card counter (pending only, pending/total, total)
+- Configurable card counter (pending only, pending/total, done/total, total)
+- Color-coded card counters (red = not done, green = done, amber = total)
+- Counter preview with color legend in Settings (Ctrl+,)
+- Card statuses: todo / in-progress / done — =-= toggles [ ] / [-], =x= toggles [x]
+- j/k scroll-follow keeps the active card in view; h/l follows lanes
+- Overflow-safe text wrapping and theme-matched scrollbars
 
 ** Tech Stack
 | Layer    | Technology           |
@@ -86,6 +91,7 @@ move cards, dd/yy/p clipboard, / search, visual selection.
 | Enter       | Finish editing (commit)                |
 | Escape      | Finish editing / deselect / close menu |
 | x           | Toggle checkbox [ ] / [x]             |
+| -           | Toggle in-progress [ ] / [-]          |
 | dd          | Delete card (double-tap d)            |
 | yy          | Copy card (double-tap y)              |
 | p           | Paste card                             |
@@ -147,6 +153,7 @@ move cards, dd/yy/p clipboard, / search, visual selection.
 | New Card Below           | o        |
 | New Card Above           | O        |
 | Toggle Checkbox          | x        |
+| Toggle In-Progress       | -        |
 | Delete Card              | dd       |
 | Paste Card               | p        |
 | Undo                     | u        |
@@ -188,7 +195,8 @@ move cards, dd/yy/p clipboard, / search, visual selection.
 3. Set your vault path and open a board:
    - Press =Ctrl+,= to open settings
    - Set your Obsidian vault path, pick theme (Tokyo Night / Tokyo Storm / Light)
-   - Choose card counter style (pending only, pending/total, or total)
+   - Choose card counter style (pending only, pending/total, done/total, or total)
+   - Counter preview with color legend: red = not done, green = done, amber = total
    - Toggle session restore (reopens last board on startup)
    - Press =Ctrl+O= to open the fuzzy file picker
    - Type to filter, =Enter= to open, =Esc= to cancel
@@ -207,6 +215,7 @@ move cards, dd/yy/p clipboard, / search, visual selection.
    - =o= — new card below focused card
    - =O= — new card above focused card
    - =x= — toggle checkbox [ ] / [x]
+   - =-= — toggle in-progress [ ] / [-] (also parses [~])
    - =dd= — delete card (double-tap d; single d deletes all selected)
    - =yy= — copy card (double-tap y)
    - =p= — paste card
@@ -278,6 +287,8 @@ Reads and writes standard Obsidian Kanban .md format:
 - Settings in =%% kanban:settings %%= comments
 - Multi-line card content (indented continuation)
 - Preamble lines preserved between lanes
+- In-progress checkbox states =- [-]= / =- [~]= are also read and written
+  (slight divergence from Obsidian's strict =- [ ]= / =- [x]=)
 
 ** Logs
 Logs are written to:
@@ -343,6 +354,7 @@ mouseless-kanban/
 │       ├── Board.tsx       # Horizontal lane layout
 │       ├── Lane.tsx        # Card list + rename + lane menu
 │       ├── Card.tsx        # Display/edit mode
+│       ├── CounterBadge.tsx # Color-coded lane counter badge
 │       ├── StatusBar.tsx   # File name, mode indicator
 │       ├── FuzzyPicker.tsx # Telescope-like file picker
 │       ├── Settings.tsx    # Vault, theme, counter, session config

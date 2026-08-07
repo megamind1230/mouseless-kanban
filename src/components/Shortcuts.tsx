@@ -52,6 +52,7 @@ const sections = [
       ['Enter', 'Finish editing'],
       ['Escape', 'Finish editing / deselect / close menu'],
       ['x', 'Toggle checkbox [ ] / [x]'],
+      ['-', 'Toggle in-progress [ ] / [-]'],
       ['dd', 'Delete card (double-tap d, or single d if selected)'],
       ['yy', 'Copy card (double-tap y)'],
       ['p', 'Paste card'],

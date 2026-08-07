@@ -75,7 +75,7 @@ export default function ArchivePanel({ onClose }: { onClose: () => void }) {
               onClick={() => setSelected(i)}
               onDoubleClick={() => { dispatch({ type: 'COPY_FROM_ARCHIVE', cardId: card.id }); setShowLanePicker(true); setMoveCardId(card.id) }}
             >
-              <span className="archive-card-title">{card.checked ? '[x]' : '[ ]'} {card.title}</span>
+              <span className="archive-card-title">{card.status === 'done' ? '[x]' : card.status === 'doing' ? '[-]' : '[ ]'} {card.title}</span>
               <span className="archive-card-actions">
                 <button
                   className="archive-action-btn"

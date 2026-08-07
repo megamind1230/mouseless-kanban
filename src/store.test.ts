@@ -8,11 +8,11 @@ function makeBoard(overrides?: Partial<Board>): Board {
     preamble: [],
     lanes: [
       { id: 'l1', name: 'Todo', cards: [
-        { id: 'c1', title: 'Card 1', checked: false },
-        { id: 'c2', title: 'Card 2', checked: true },
+        { id: 'c1', title: 'Card 1', status: 'todo' as const },
+        { id: 'c2', title: 'Card 2', status: 'done' as const },
       ]},
       { id: 'l2', name: 'Done', cards: [
-        { id: 'c3', title: 'Card 3', checked: false },
+        { id: 'c3', title: 'Card 3', status: 'todo' as const },
       ]},
     ],
     settings: null,
@@ -165,10 +165,53 @@ describe('reducer', () => {
   })
 
   describe('TOGGLE_CARD', () => {
-    it('toggles checkbox', () => {
+    it('toggles checkbox to done', () => {
       const s = stateWith(makeBoard(), { activeLane: 0 })
       const result = reducer(s, { type: 'TOGGLE_CARD', laneId: 'l1', cardId: 'c1' })
-      expect(result.board!.lanes[0].cards[0].checked).toBe(true)
+      expect(result.board!.lanes[0].cards[0].status).toBe('done')
+    })
+
+    it('toggles a done card back to todo', () => {
+      const s = stateWith(makeBoard(), { activeLane: 0 })
+      const result = reducer(s, { type: 'TOGGLE_CARD', laneId: 'l1', cardId: 'c2' })
+      expect(result.board!.lanes[0].cards[1].status).toBe('todo')
+    })
+
+    it('marks an in-progress card done', () => {
+      const board = makeBoard()
+      board.lanes[0].cards[0].status = 'doing'
+      const s = stateWith(board, { activeLane: 0 })
+      const result = reducer(s, { type: 'TOGGLE_CARD', laneId: 'l1', cardId: 'c1' })
+      expect(result.board!.lanes[0].cards[0].status).toBe('done')
+    })
+  })
+
+  describe('TOGGLE_IN_PROGRESS', () => {
+    it('marks a todo card in-progress', () => {
+      const s = stateWith(makeBoard(), { activeLane: 0 })
+      const result = reducer(s, { type: 'TOGGLE_IN_PROGRESS', laneId: 'l1', cardId: 'c1' })
+      expect(result.board!.lanes[0].cards[0].status).toBe('doing')
+    })
+
+    it('unmarks an in-progress card back to todo', () => {
+      const board = makeBoard()
+      board.lanes[0].cards[0].status = 'doing'
+      const s = stateWith(board, { activeLane: 0 })
+      const result = reducer(s, { type: 'TOGGLE_IN_PROGRESS', laneId: 'l1', cardId: 'c1' })
+      expect(result.board!.lanes[0].cards[0].status).toBe('todo')
+    })
+
+    it('marks a done card in-progress', () => {
+      const s = stateWith(makeBoard(), { activeLane: 0 })
+      const result = reducer(s, { type: 'TOGGLE_IN_PROGRESS', laneId: 'l1', cardId: 'c2' })
+      expect(result.board!.lanes[0].cards[1].status).toBe('doing')
+    })
+
+    it('toggles all selected cards', () => {
+      const s = stateWith(makeBoard(), { activeLane: 0, activeCard: 0, selectedIds: ['c1', 'c2'], selectionMode: 'multi' })
+      const result = reducer(s, { type: 'TOGGLE_IN_PROGRESS', laneId: 'l1', cardId: 'c1' })
+      expect(result.board!.lanes[0].cards[0].status).toBe('doing')
+      expect(result.board!.lanes[0].cards[1].status).toBe('doing')
     })
   })
 
@@ -265,8 +308,8 @@ describe('reducer', () => {
     it('toggles all selected cards', () => {
       const s = stateWith(makeBoard(), { activeLane: 0, activeCard: 0, selectedIds: ['c1', 'c2'], selectionMode: 'multi' })
       const result = reducer(s, { type: 'TOGGLE_CARD', laneId: 'l1', cardId: 'c1' })
-      expect(result.board!.lanes[0].cards[0].checked).toBe(true)
-      expect(result.board!.lanes[0].cards[1].checked).toBe(false)
+      expect(result.board!.lanes[0].cards[0].status).toBe('done')
+      expect(result.board!.lanes[0].cards[1].status).toBe('todo')
     })
   })
 
@@ -324,8 +367,8 @@ describe('reducer', () => {
   describe('PASTE_CARD with multi-clipboard', () => {
     it('pastest multiple cards from clipboard', () => {
       const s = stateWith(makeBoard(), { activeLane: 0, activeCard: 0, clipboard: [
-        { id: 'p1', title: 'Paste 1', checked: false },
-        { id: 'p2', title: 'Paste 2', checked: true },
+        { id: 'p1', title: 'Paste 1', status: 'todo' as const },
+        { id: 'p2', title: 'Paste 2', status: 'done' as const },
       ]})
       const result = reducer(s, { type: 'PASTE_CARD' })
       expect(result.board!.lanes[0].cards).toHaveLength(4)
@@ -414,9 +457,9 @@ describe('reducer', () => {
       const board = {
         ...makeBoard(),
         lanes: [{ id: 'l1', name: 'Todo', cards: [
-          { id: 'c1', title: 'Banana', checked: false },
-          { id: 'c2', title: 'Apple', checked: false },
-          { id: 'c3', title: 'Cherry', checked: false },
+          { id: 'c1', title: 'Banana', status: 'todo' as const },
+          { id: 'c2', title: 'Apple', status: 'todo' as const },
+          { id: 'c3', title: 'Cherry', status: 'todo' as const },
         ]}],
       }
       const s = stateWith(board, { activeLane: 0, activeCard: 0 })
@@ -428,9 +471,9 @@ describe('reducer', () => {
       const board = {
         ...makeBoard(),
         lanes: [{ id: 'l1', name: 'Todo', cards: [
-          { id: 'c1', title: 'Banana', checked: false },
-          { id: 'c2', title: 'Apple', checked: false },
-          { id: 'c3', title: 'Cherry', checked: false },
+          { id: 'c1', title: 'Banana', status: 'todo' as const },
+          { id: 'c2', title: 'Apple', status: 'todo' as const },
+          { id: 'c3', title: 'Cherry', status: 'todo' as const },
         ]}],
       }
       const s = stateWith(board, { activeLane: 0, activeCard: 0, selectedIds: ['c1', 'c3'], selectionMode: 'multi' })
@@ -446,9 +489,9 @@ describe('reducer', () => {
       const board = {
         ...makeBoard(),
         lanes: [{ id: 'l1', name: 'Todo', cards: [
-          { id: 'c1', title: 'Cherry', checked: false },
-          { id: 'c2', title: 'Middle', checked: false },
-          { id: 'c3', title: 'Apple', checked: false },
+          { id: 'c1', title: 'Cherry', status: 'todo' as const },
+          { id: 'c2', title: 'Middle', status: 'todo' as const },
+          { id: 'c3', title: 'Apple', status: 'todo' as const },
         ]}],
       }
       const s = stateWith(board, { activeLane: 0, activeCard: 0, selectedIds: ['c1', 'c3'], selectionMode: 'multi' })
@@ -465,7 +508,7 @@ describe('reducer', () => {
       const board = {
         ...makeBoard(),
         lanes: [{ id: 'l1', name: 'Todo', cards: [
-          { id: 'c1', title: 'Task 3 of 10', checked: false },
+          { id: 'c1', title: 'Task 3 of 10', status: 'todo' as const },
         ]}],
       }
       const s = stateWith(board, { activeLane: 0, activeCard: 0 })
@@ -477,7 +520,7 @@ describe('reducer', () => {
       const board = {
         ...makeBoard(),
         lanes: [{ id: 'l1', name: 'Todo', cards: [
-          { id: 'c1', title: 'Task 3 of 10', checked: false },
+          { id: 'c1', title: 'Task 3 of 10', status: 'todo' as const },
         ]}],
       }
       const s = stateWith(board, { activeLane: 0, activeCard: 0 })
@@ -489,9 +532,9 @@ describe('reducer', () => {
       const board = {
         ...makeBoard(),
         lanes: [{ id: 'l1', name: 'Todo', cards: [
-          { id: 'c1', title: 'Item 1', checked: false },
-          { id: 'c2', title: 'Item 2', checked: false },
-          { id: 'c3', title: 'No number', checked: false },
+          { id: 'c1', title: 'Item 1', status: 'todo' as const },
+          { id: 'c2', title: 'Item 2', status: 'todo' as const },
+          { id: 'c3', title: 'No number', status: 'todo' as const },
         ]}],
       }
       const s = stateWith(board, { activeLane: 0, activeCard: 0, selectedIds: ['c1', 'c2'], selectionMode: 'multi' })
@@ -505,7 +548,7 @@ describe('reducer', () => {
       const board = {
         ...makeBoard(),
         lanes: [{ id: 'l1', name: 'Todo', cards: [
-          { id: 'c1', title: 'Plain text', checked: false },
+          { id: 'c1', title: 'Plain text', status: 'todo' as const },
         ]}],
       }
       const s = stateWith(board, { activeLane: 0, activeCard: 0 })

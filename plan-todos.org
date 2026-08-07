@@ -119,6 +119,16 @@
 - [X] Configurable card counter style
 - [X] Centered lane layout
 
+** DONE Phase 11: Polish & Enhancements
+- [X] Counter preview with color legend in Settings
+- [X] "Done / Total (2/5)" counter style
+- [X] Color-coded lane counters (red = not done, green = done, amber = total)
+- [X] In-progress card state (=x= toggles done, =-= toggles [ ] / [-], parses [~])
+- [X] In-progress / done states batch on multi-selection
+- [X] Scroll-follow on j/k (vertical) and h/l (horizontal)
+- [X] Overflow text wrapping + scrollbar separation padding
+- [X] Theme-matched scrollbars (dark themes / white for light)
+
 ** frozen/later
 *** Views & UI
 - [ ] Minimap / overview mode (bird's-eye view of all lanes)
@@ -131,6 +141,7 @@
 - [ ] Custom CSS themes (light mode, high contrast, etc.)
 
 *** File & Vault
+- [ ] .org file format support (org-mode kanban boards)
 - [ ] Multiple vault support (switch between vaults)
 - [ ] Recent files list (Ctrl+R)
 - [ ] File Watcher: reload when .md changes externally

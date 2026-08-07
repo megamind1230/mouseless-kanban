@@ -134,3 +134,19 @@
 ** [2026-07-28] — Zoom Shortcuts
 - Ctrl+= / Ctrl+- / Ctrl+0 for zoom in, zoom out, reset zoom
 - IPC handlers in main process using webContents.setZoomLevel
+
+** [2026-08-07] — Counter Preview, In-Progress Cards, UX Polish
+- Card counter: added "Done / Total (2/5)" style
+- Settings: live counter preview (sample lane) with color legend
+  - red = not done, green = done, amber = total
+- Lane counter badges color-coded per part (pending red, done green, total amber)
+- Card status model: =checked= replaced with =todo | doing | done=
+- =-= toggles in-progress (=- [ ]= ↔ =- [-]=); parser also accepts =- [~]=
+- =x= toggles done (todo↔done, doing→done)
+- Both =-= and =x= operate on all selected cards
+- In-progress cards styled amber; archive shows =- [-]=
+- Pending counter includes in-progress cards; =gA= archives only done cards
+- Scroll-follow: j/k keeps the active card in view; h/l keeps the active lane visible
+- Overflow: long words wrap inside lanes; scrollbar gutter + right padding
+- Theme-matched scrollbars (dark for Night/Storm, white for Light)
+- 77 tests passing, TypeScript clean

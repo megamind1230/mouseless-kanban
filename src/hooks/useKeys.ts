@@ -202,6 +202,7 @@ export function useKeys({ showPicker, setShowPicker, dispatch, setShowSettings, 
           }
           case 'o': e.preventDefault(); if (lane) dispatch({ type: 'ADD_CARD', laneId: lane.id, position: 'below' }); return
           case 'x': e.preventDefault(); if (lane && card) dispatch({ type: 'TOGGLE_CARD', laneId: lane.id, cardId: card.id }); return
+          case '-': e.preventDefault(); if (lane && card) dispatch({ type: 'TOGGLE_IN_PROGRESS', laneId: lane.id, cardId: card.id }); return
           case 'd': {
             if (s.selectedIds.length > 0) {
               e.preventDefault(); if (lane && card) dispatch({ type: 'DELETE_CARD', laneId: lane.id, cardId: card.id })

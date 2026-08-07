@@ -247,6 +247,13 @@ export const commands: Command[] = [
     action: (d, lane, card) => { if (lane && card) d({ type: 'TOGGLE_CARD', laneId: lane.id, cardId: card.id }) },
   },
   {
+    id: 'toggle-in-progress',
+    label: 'Toggle In-Progress [ ] / [-]',
+    shortcut: '-',
+    category: 'Card',
+    action: (d, lane, card) => { if (lane && card) d({ type: 'TOGGLE_IN_PROGRESS', laneId: lane.id, cardId: card.id }) },
+  },
+  {
     id: 'delete-card',
     label: 'Delete Card',
     shortcut: 'dd',

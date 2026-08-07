@@ -72,8 +72,8 @@ export function parse(markdown: string): Board {
       continue
     }
 
-    // Card: - [ ] or - [x]
-    const cardMatch = line.match(/^(\s*)- \[([ x])\] (.*)$/)
+    // Card: - [ ] / - [x] / - [~] / - [-]
+    const cardMatch = line.match(/^(\s*)- \[([ xX~-])\] (.*)$/)
     if (cardMatch && currentLane) {
       const indent = cardMatch[1].length
       const titleParts: string[] = [cardMatch[3].trim()]
@@ -81,17 +81,19 @@ export function parse(markdown: string): Board {
       while (i + 1 < lines.length) {
         const next = lines[i + 1]
         const contMatch = next.match(/^(\s+)(.+)$/)
-        if (contMatch && contMatch[1].length > indent && !next.match(/^\s*- \[[ x]\]/) && !next.match(/^\s*## /)) {
+        if (contMatch && contMatch[1].length > indent && !next.match(/^\s*- \[[ xX~-]\]/) && !next.match(/^\s*## /)) {
           titleParts.push(contMatch[2].trim())
           i++
         } else {
           break
         }
       }
+      const status = cardMatch[2] === 'x' || cardMatch[2] === 'X' ? 'done' :
+        cardMatch[2] === '-' || cardMatch[2] === '~' ? 'doing' : 'todo'
       const card: Card = {
         id: genId(),
         title: titleParts.join('\n'),
-        checked: cardMatch[2] === 'x'
+        status
       }
       const isArchive = /^archive$/i.test(currentLane.name)
       if (isArchive) {
@@ -108,7 +110,7 @@ export function parse(markdown: string): Board {
       const card: Card = {
         id: genId(),
         title: plainCardMatch[1].trim(),
-        checked: false
+        status: 'todo'
       }
       const isArchive = /^archive$/i.test(currentLane.name)
       if (isArchive) {
@@ -149,7 +151,7 @@ export function serialize(board: Board): string {
     parts.push('')
     parts.push(`## ${lane.name}`)
     for (const card of lane.cards) {
-      const checkbox = card.checked ? '[x]' : '[ ]'
+      const checkbox = card.status === 'done' ? '[x]' : card.status === 'doing' ? '[-]' : '[ ]'
       if (card.title.includes('\n')) {
         parts.push(`- ${checkbox} ${card.title.split('\n')[0]}`)
         for (const line of card.title.split('\n').slice(1)) {
@@ -172,7 +174,7 @@ export function serialize(board: Board): string {
     parts.push('')
     parts.push('## Archive')
     for (const card of board.archivedCards) {
-      const checkbox = card.checked ? '[x]' : '[ ]'
+      const checkbox = card.status === 'done' ? '[x]' : card.status === 'doing' ? '[-]' : '[ ]'
       if (card.title.includes('\n')) {
         parts.push(`- ${checkbox} ${card.title.split('\n')[0]}`)
         for (const line of card.title.split('\n').slice(1)) {

@@ -1,7 +1,9 @@
+export type CardStatus = 'todo' | 'doing' | 'done'
+
 export interface Card {
   id: string
   title: string
-  checked: boolean
+  status: CardStatus
 }
 
 export interface Lane {
@@ -43,6 +45,7 @@ export type BoardAction =
   | { type: 'FOLD_ALL_LANES' }
   | { type: 'MERGE_LANES'; targetLaneIndex: number }
   | { type: 'TOGGLE_CARD'; laneId: string; cardId: string }
+  | { type: 'TOGGLE_IN_PROGRESS'; laneId: string; cardId: string }
   | { type: 'EDIT_CARD'; laneId: string; cardId: string; title: string }
   | { type: 'YANK_CARD'; card: Card }
   | { type: 'PASTE_CARD' }

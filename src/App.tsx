@@ -150,7 +150,7 @@ function AppInner() {
       )}
       {searchQuery !== null && <SearchBar />}
       {board ? (
-        <BoardView counterStyle={cardCounter as 'pending' | 'pending-total' | 'total'} />
+        <BoardView counterStyle={cardCounter as 'pending' | 'pending-total' | 'done-total' | 'total'} />
       ) : (
         <div className="empty-state">
           <p>No file open</p>

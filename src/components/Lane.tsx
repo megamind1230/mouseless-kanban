@@ -1,13 +1,14 @@
 import { useState, useRef, useEffect } from 'react'
 import { useBoardState, useBoardDispatch } from '../store'
 import Card from './Card'
+import CounterBadge from './CounterBadge'
 import LaneMenu from './LaneMenu'
 import type { Lane as LaneType } from '../core/types'
 
 interface LaneProps {
   lane: LaneType
   isActive: boolean
-  counterStyle?: 'pending' | 'pending-total' | 'total'
+  counterStyle?: 'pending' | 'pending-total' | 'done-total' | 'total'
 }
 
 export default function Lane({ lane, isActive, counterStyle = 'pending' }: LaneProps) {
@@ -18,14 +19,27 @@ export default function Lane({ lane, isActive, counterStyle = 'pending' }: LaneP
   const [showMenu, setShowMenu] = useState(false)
   const [dragOver, setDragOver] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
+  const laneCardsRef = useRef<HTMLDivElement>(null)
   const folded = foldedLanes.includes(lane.id)
 
-  const pendingCount = lane.cards.filter(c => !c.checked).length
+  const pendingCount = lane.cards.filter(c => c.status !== 'done').length
   const totalCount = lane.cards.length
-  const countLabel =
-    counterStyle === 'total' ? totalCount :
-    counterStyle === 'pending-total' ? `${pendingCount}/${totalCount}` :
-    pendingCount
+
+  // Scroll active card into view (vertical) when navigating with j/k etc.
+  useEffect(() => {
+    if (!isActive) return
+    const container = laneCardsRef.current
+    const activeEl = container?.querySelector('.card--active')
+    if (!container || !activeEl) return
+    const pad = 8
+    const cr = container.getBoundingClientRect()
+    const ar = (activeEl as HTMLElement).getBoundingClientRect()
+    if (ar.top < cr.top + pad) {
+      container.scrollTop -= cr.top + pad - ar.top
+    } else if (ar.bottom > cr.bottom - pad) {
+      container.scrollTop += ar.bottom - (cr.bottom - pad)
+    }
+  }, [activeCard, isActive])
 
   // Rename handling
   useEffect(() => {
@@ -118,7 +132,7 @@ export default function Lane({ lane, isActive, counterStyle = 'pending' }: LaneP
       ) : (
         <div className="lane-header" onClick={() => folded && dispatch({ type: 'TOGGLE_LANE_FOLD' })}>
           <span className="lane-title">{lane.name}</span>
-          <span className="lane-card-count">{countLabel}</span>
+          <span className="lane-card-count"><CounterBadge style={counterStyle} pending={pendingCount} total={totalCount} /></span>
         </div>
       )}
       {showMenu && (
@@ -129,7 +143,7 @@ export default function Lane({ lane, isActive, counterStyle = 'pending' }: LaneP
         />
       )}
       {!folded && (
-        <div className="lane-cards">
+        <div className="lane-cards" ref={laneCardsRef}>
           {lane.cards.map((card, i) => (
             <Card
               key={card.id}

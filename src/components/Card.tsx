@@ -70,14 +70,17 @@ export default function Card({ card, isActive, isSelected, laneId }: CardProps) 
     e.dataTransfer.effectAllowed = 'move'
   }
 
+  const isDone = card.status === 'done'
+  const isDoing = card.status === 'doing'
+
   return (
     <div
-      className={`card ${isActive ? 'card--active' : ''} ${card.checked ? 'card--checked' : ''} ${isSelected ? 'card--selected' : ''}`}
+      className={`card ${isActive ? 'card--active' : ''} ${isDone ? 'card--checked' : ''} ${isDoing ? 'card--doing' : ''} ${isSelected ? 'card--selected' : ''}`}
       draggable
       onDragStart={handleDragStart}
       onDoubleClick={() => window.dispatchEvent(new Event('edit-card'))}
     >
-      <span className={`card-checkbox ${card.checked ? 'card-checkbox--checked' : ''}`}></span>
+      <span className={`card-checkbox ${isDone ? 'card-checkbox--checked' : ''} ${isDoing ? 'card-checkbox--doing' : ''}`}></span>
       <span className="card-title">{card.title}</span>
     </div>
   )

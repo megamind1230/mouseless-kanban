@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import CounterBadge from './CounterBadge'
 
 const THEMES = [
   { id: 'tokyo-night', label: 'Tokyo Night' },
@@ -9,6 +10,7 @@ const THEMES = [
 const COUNTER_STYLES = [
   { id: 'pending', label: 'Pending only (3)' },
   { id: 'pending-total', label: 'Pending / Total (3/5)' },
+  { id: 'done-total', label: 'Done / Total (2/5)' },
   { id: 'total', label: 'Total only (5)' },
 ]
 
@@ -101,6 +103,19 @@ export default function Settings({ vaultPath, theme, cardCounter, sessionRestore
                 {s.label}
               </label>
             ))}
+          </div>
+
+          <label className="settings-label">Counter preview</label>
+          <div className="settings-preview">
+            <div className="settings-preview-lane">
+              <span className="settings-preview-title">Doing</span>
+              <span className="lane-card-count"><CounterBadge style={selCounter as 'pending' | 'pending-total' | 'done-total' | 'total'} pending={3} total={5} /></span>
+            </div>
+            <div className="settings-legend">
+              <span className="settings-legend-item"><span className="settings-legend-dot settings-legend-dot--red" /> not done (3)</span>
+              <span className="settings-legend-item"><span className="settings-legend-dot settings-legend-dot--green" /> done (2)</span>
+              <span className="settings-legend-item"><span className="settings-legend-dot settings-legend-dot--amber" /> total (5)</span>
+            </div>
           </div>
         </div>
 

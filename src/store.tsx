@@ -106,7 +106,7 @@ function reducer(state: AppState, action: BoardAction): AppState {
       const b = clone(prev)
       const lane = b.lanes.find(l => l.id === action.laneId)
       if (!lane) return state
-      const card = { id: `k${Date.now()}`, title: '', checked: false }
+      const card = { id: `k${Date.now()}`, title: '', status: 'todo' as const }
       let idx = lane.cards.length
       if (action.position === 'above') idx = state.activeCard
       if (action.position === 'below') idx = state.activeCard + 1
@@ -183,14 +183,36 @@ function reducer(state: AppState, action: BoardAction): AppState {
       const b = clone(prev)
       const lane = b.lanes.find(l => l.id === action.laneId)
       if (!lane) return state
+      const toggle = (c: Card) => {
+        c.status = c.status === 'done' ? 'todo' : 'done'
+      }
       if (state.selectedIds.length > 0) {
         const toToggle = new Set(state.selectedIds)
-        lane.cards.forEach(c => { if (toToggle.has(c.id)) c.checked = !c.checked })
+        lane.cards.forEach(c => { if (toToggle.has(c.id)) toggle(c) })
         return { ...state, ...snap(state, prev), board: b }
       }
       const card = lane.cards.find(c => c.id === action.cardId)
       if (!card) return state
-      card.checked = !card.checked
+      toggle(card)
+      return { ...state, ...snap(state, prev), board: b }
+    }
+
+    case 'TOGGLE_IN_PROGRESS': {
+      const prev = state.board!
+      const b = clone(prev)
+      const lane = b.lanes.find(l => l.id === action.laneId)
+      if (!lane) return state
+      const toggle = (c: Card) => {
+        c.status = c.status === 'doing' ? 'todo' : 'doing'
+      }
+      if (state.selectedIds.length > 0) {
+        const toToggle = new Set(state.selectedIds)
+        lane.cards.forEach(c => { if (toToggle.has(c.id)) toggle(c) })
+        return { ...state, ...snap(state, prev), board: b }
+      }
+      const card = lane.cards.find(c => c.id === action.cardId)
+      if (!card) return state
+      toggle(card)
       return { ...state, ...snap(state, prev), board: b }
     }
 
@@ -468,9 +490,9 @@ function reducer(state: AppState, action: BoardAction): AppState {
       const prev = state.board!
       const b = clone(prev)
       for (const lane of b.lanes) {
-        const done = lane.cards.filter(c => c.checked)
+        const done = lane.cards.filter(c => c.status === 'done')
         b.archivedCards.push(...done)
-        lane.cards = lane.cards.filter(c => !c.checked)
+        lane.cards = lane.cards.filter(c => c.status !== 'done')
       }
       return { ...state, ...snap(state, prev), board: b, activeCard: 0 }
     }
