@@ -12,20 +12,13 @@ export interface Command {
 export const commands: Command[] = [
   // File
   {
-    id: 'open',
-    label: 'Open Board',
-    shortcut: 'Ctrl+O',
+    id: 'quick-switch',
+    label: 'Quick Switcher (Open or Create Board)',
+    shortcut: 'Alt+Q',
     category: 'File',
-    action: () => document.dispatchEvent(new CustomEvent('cmd', { detail: 'open' })),
+    action: () => document.dispatchEvent(new CustomEvent('cmd', { detail: 'quick-switch' })),
   },
 
-  {
-    id: 'new-file',
-    label: 'New Board in Vault',
-    shortcut: 'Ctrl+Shift+N',
-    category: 'File',
-    action: () => document.dispatchEvent(new CustomEvent('cmd', { detail: 'new-file' })),
-  },
   {
     id: 'settings',
     label: 'Settings',

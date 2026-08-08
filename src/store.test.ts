@@ -36,6 +36,20 @@ describe('reducer', () => {
     })
   })
 
+  describe('SET_FOLDED_LANES', () => {
+    it('sets folded lanes', () => {
+      const s = stateWith(makeBoard())
+      const result = reducer(s, { type: 'SET_FOLDED_LANES', ids: ['l1', 'l2'] })
+      expect(result.foldedLanes).toEqual(['l1', 'l2'])
+    })
+
+    it('clears folded lanes with empty ids', () => {
+      const s = stateWith(makeBoard(), { foldedLanes: ['l1'] })
+      const result = reducer(s, { type: 'SET_FOLDED_LANES', ids: [] })
+      expect(result.foldedLanes).toEqual([])
+    })
+  })
+
   describe('navigation', () => {
     it('SET_ACTIVE_LANE moves to lane', () => {
       const s = stateWith(makeBoard(), { activeLane: 0 })

@@ -10,11 +10,11 @@ move cards, dd/yy/p clipboard, / search, visual selection.
 
 ** Features
 - Keyboard-first navigation (vim-like hjkl / HJKL / gg / G)
-- Edit .md files in Obsidian Kanban format
-- Fuzzy file picker (telescope-like) via Ctrl+O
+- Edit .md files in Obsidian Kanban format AND .org kanban boards
+- Quick switcher (=Alt+Q=): fuzzy-open an existing board or create a new one inline
 - Search cards with / (vim-like), n/N for next/prev match
-- Settings page (Ctrl+,) with vault path config
-- Create new boards in vault (Ctrl+Shift+N)
+- Settings page (Ctrl+,) — full-screen overlay, closed with Esc
+- Create new boards in vault via quick switcher (=.md= / =.org=)
 - Lane management: rename (r), move left/right, delete (e menu)
 - Card editing: i/a to edit, gi to replace, o/O to add below/above
 - Multi-select: space (toggle), v (visual range), batch dd/yy/x/HJKL
@@ -29,6 +29,7 @@ move cards, dd/yy/p clipboard, / search, visual selection.
 - Drag and drop cards between lanes (mouse fallback)
 - Double-click to edit cards
 - Session restore (remembers last open board)
+- Zoom level persists across sessions; folded-lane state persists per board
 - Configurable card counter (pending only, pending/total, done/total, total)
 - Color-coded card counters (red = not done, green = done, amber = total)
 - Counter preview with color legend in Settings (Ctrl+,)
@@ -44,7 +45,7 @@ move cards, dd/yy/p clipboard, / search, visual selection.
 | Language | TypeScript 5.x       |
 | UI       | React 19             |
 | State    | useReducer + Context |
-| Test     | Vitest (planned)     |
+| Test     | Vitest (86 tests)     |
 
 ** Keyboard Shortcuts
 *** Navigation
@@ -119,24 +120,22 @@ move cards, dd/yy/p clipboard, / search, visual selection.
 | Esc | Close search          |
 
 *** File / Global
-| Key          | Action                        |
-|--------------+-------------------------------|
-| Ctrl+P       | Command palette               |
-| Ctrl+=       | Zoom in                       |
-| Ctrl+-       | Zoom out                      |
-| Ctrl+0       | Reset zoom                    |
-| Ctrl+O       | Open board (fuzzy finder)     |
-| Ctrl+Shift+N | New board in vault            |
-| Ctrl+N       | New lane                      |
-| Ctrl+,       | Settings (vault, theme, more) |
-| Ctrl+Q       | Quit                          |
-| ? / F1       | Show shortcuts manual         |
+| Key          | Action                          |
+|--------------+---------------------------------|
+| Ctrl+P       | Command palette                 |
+| Alt+Q        | Quick switcher (open or create) |
+| Ctrl+=       | Zoom in                         |
+| Ctrl+-       | Zoom out                        |
+| Ctrl+0       | Reset zoom                      |
+| Ctrl+N       | New lane                        |
+| Ctrl+,       | Settings (vault, theme, more)   |
+| Ctrl+Q       | Quit                            |
+| ? / F1       | Show shortcuts manual           |
 
 *** Command Palette (Ctrl+P)
 | Command                  | Shortcut |
 |--------------------------+----------|
-| Open Board               | Ctrl+O   |
-| New Board in Vault       | Ctrl+N   |
+| Quick Switcher (Open or Create Board) | Alt+Q   |
 | Settings                 | Ctrl+,   |
 | Quit                     | Ctrl+Q   |
 | New Lane                 | Ctrl+N   |
@@ -198,8 +197,8 @@ move cards, dd/yy/p clipboard, / search, visual selection.
    - Choose card counter style (pending only, pending/total, done/total, or total)
    - Counter preview with color legend: red = not done, green = done, amber = total
    - Toggle session restore (reopens last board on startup)
-   - Press =Ctrl+O= to open the fuzzy file picker
-   - Type to filter, =Enter= to open, =Esc= to cancel
+   - Press =Alt+Q= to open the quick switcher
+   - Type to filter existing boards, =Enter= to open, =Esc= to cancel
 
 4. Core navigation (vim-style):
    - =h= / =l= — move between lanes left/right
@@ -259,10 +258,13 @@ move cards, dd/yy/p clipboard, / search, visual selection.
 11. Shortcuts manual:
     - =?= or =F1= — open the full keyboard shortcuts reference
 
-12. Create a new board:
-     - =ctrl+shift+n= — opens a name prompt
-     - Type a name, press =Enter=
-     - Board is created in your vault and automatically opened
+12. Create a new board (quick switcher):
+     - Press =Alt+Q= to open the quick switcher
+     - Type a name (must end in =.md= or =.org=) that doesn't match an existing board
+     - The list shows a =+ New Board: <name>= entry at the bottom
+     - Press =Enter= with it highlighted to create the board in your vault
+     - The board is created with the right template and opened automatically
+     - =.md= boards get Obsidian frontmatter + =## Todo=; =.org= boards get =** Todo=
 
 13. Drag and drop:
      - Drag any card by mouse to another lane to move it
@@ -278,6 +280,7 @@ move cards, dd/yy/p clipboard, / search, visual selection.
 | =npm run dev=       | Start in dev mode |
 | =npm run build=     | Production build  |
 | =npm run typecheck= | Type check only   |
+| =npm run test=      | Run unit tests    |
 
 ** Obsidian Kanban Compatibility
 Reads and writes standard Obsidian Kanban .md format:
@@ -290,10 +293,19 @@ Reads and writes standard Obsidian Kanban .md format:
 - In-progress checkbox states =- [-]= / =- [~]= are also read and written
   (slight divergence from Obsidian's strict =- [ ]= / =- [x]=)
 
+** Org-mode Boards (.org)
+Kanban boards can also be plain =.org= files:
+- No frontmatter — lanes use =** Name= headings
+- Cards stay =- [ ]= / =- [x]= / =- [-]=
+- Settings stored as a comment: =# kanban:settings {json}=
+- New =.org= boards are created with a =** Todo= template
+- The parser is format-agnostic (accepts =##= and =**= lanes), so a file
+  written in the wrong format is corrected on the next auto-save
+
 ** Logs
 Logs are written to:
 #+begin_src
-~/magnus/mouseless-kanban/logs/YYYY-MM-DD.log
+~/magnus/mouseless-mindmap/logs/YYYY-MM-DD.log
 #+end_src
 Each log entry includes a timestamp. Useful for debugging IPC issues or file I/O errors.
 
@@ -343,30 +355,32 @@ mouseless-kanban/
 │   ├── App.tsx            # Root component, wires hooks
 │   ├── main.tsx           # React entry point
 │   ├── store.tsx          # useReducer + undo history
-│   ├── index.css          # Tokyo Night dark theme
+│   ├── index.css          # Themes + layout
 │   ├── core/
 │   │   ├── types.ts       # Board, Lane, Card, BoardAction
-│   │   └── parser.ts      # Obsidian Kanban .md ↔ Board
+│   │   ├── parser.ts      # Obsidian .md / .org ↔ Board
+│   │   ├── fuzzy.ts       # Fuzzy string matching
+│   │   └── commands.ts    # Command palette registry
 │   ├── hooks/
 │   │   ├── useKeys.ts     # Keyboard engine (hjkl/HJKL/dd/yy)
-│   │   └── useFile.ts     # File state, auto-save, vault
+│   │   └── useFile.ts     # File state, auto-save, vault, settings
 │   └── components/
 │       ├── Board.tsx       # Horizontal lane layout
-│       ├── Lane.tsx        # Card list + rename + lane menu
+│       ├── Lane.tsx        # Card list + rename + fold
 │       ├── Card.tsx        # Display/edit mode
 │       ├── CounterBadge.tsx # Color-coded lane counter badge
 │       ├── StatusBar.tsx   # File name, mode indicator
-│       ├── FuzzyPicker.tsx # Telescope-like file picker
-│       ├── Settings.tsx    # Vault, theme, counter, session config
-│       ├── Prompt.tsx      # Inline input modal
+│       ├── FuzzyPicker.tsx # Quick switcher (open or create)
+│       ├── Settings.tsx    # Full-screen settings (vault, theme, counter)
 │       ├── Shortcuts.tsx   # Keyboard shortcuts manual
 │       ├── CommandPalette.tsx # Ctrl+P command palette
 │       ├── LaneMenu.tsx    # Lane context menu
 │       ├── LanePicker.tsx  # Lane selection modal
-│       └── SearchBar.tsx   # / search bar
+│       ├── SearchBar.tsx   # / search bar
+│       └── ArchivePanel.tsx # gA archived cards panel
 ├── scripts/
 │   └── dev.mjs            # Dev launcher (Vite + Electron)
-├── plan-todos.org
+├── plans-and-todos.org
 ├── bugs.org
 ├── README.org
 ├── changelog.org

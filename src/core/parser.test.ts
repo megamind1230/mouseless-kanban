@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { parse, serialize } from './parser'
+import { parse, serialize, formatFromPath } from './parser'
 
 const SAMPLE_MD = `---
 kanban-plugin: board
@@ -229,5 +229,79 @@ describe('round-trip', () => {
     const board = { frontmatter: '', preamble: [], lanes: [], settings: null, archivedCards: [] }
     const md = serialize(board)
     expect(md).toContain('kanban-plugin: board')
+  })
+})
+
+describe('org format', () => {
+  const SAMPLE_ORG = `** Todo
+
+- [ ] Buy groceries
+- [x] Write tests
+- [~] In progress
+
+** Done
+
+- [x] Setup project
+`
+
+  it('parses ** lane headings', () => {
+    const board = parse(SAMPLE_ORG)
+    expect(board.lanes).toHaveLength(2)
+    expect(board.lanes[0].name).toBe('Todo')
+    expect(board.lanes[1].name).toBe('Done')
+  })
+
+  it('parses cards with statuses', () => {
+    const board = parse(SAMPLE_ORG)
+    expect(board.lanes[0].cards[0].status).toBe('todo')
+    expect(board.lanes[0].cards[1].status).toBe('done')
+    expect(board.lanes[0].cards[2].status).toBe('doing')
+  })
+
+  it('parses org settings comment', () => {
+    const org = `** Lane
+
+# kanban:settings {"newNoteFolder":"inbox"}
+
+- [ ] card
+`
+    const board = parse(org)
+    expect(board.settings).toEqual({ newNoteFolder: 'inbox' })
+  })
+
+  it('serializes org lanes with ** and no frontmatter', () => {
+    const board = parse(SAMPLE_ORG)
+    const out = serialize(board, 'org')
+    expect(out).not.toContain('---')
+    expect(out).not.toContain('kanban-plugin')
+    expect(out).toContain('** Todo')
+    expect(out).toContain('** Done')
+    expect(out).toContain('- [x] Write tests')
+  })
+
+  it('serializes org settings as # comment', () => {
+    const board = parse(SAMPLE_ORG)
+    const withSettings = { ...board, settings: { newNoteFolder: 'inbox' } }
+    const out = serialize(withSettings, 'org')
+    expect(out).toContain('# kanban:settings {"newNoteFolder":"inbox"}')
+    expect(out).not.toContain('%%')
+  })
+
+  it('round-trips org boards', () => {
+    const board1 = parse(SAMPLE_ORG)
+    const out = serialize(board1, 'org')
+    const board2 = parse(out)
+    expect(board2.lanes).toHaveLength(board1.lanes.length)
+    for (let i = 0; i < board1.lanes.length; i++) {
+      expect(board2.lanes[i].name).toBe(board1.lanes[i].name)
+      expect(board2.lanes[i].cards).toHaveLength(board1.lanes[i].cards.length)
+    }
+  })
+
+  it('formatFromPath detects org', () => {
+    expect(formatFromPath('/vault/new.org')).toBe('org')
+    expect(formatFromPath('/vault/new.md')).toBe('md')
+    expect(formatFromPath('/vault/readme')).toBe('md')
+    expect(formatFromPath(null)).toBe('md')
   })
 })

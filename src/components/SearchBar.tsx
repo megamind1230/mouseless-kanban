@@ -32,6 +32,7 @@ export default function SearchBar() {
   }, [draft, matches, dispatch])
 
   function handleKeyDown(e: React.KeyboardEvent) {
+    e.stopPropagation()
     switch (e.key) {
       case 'Escape':
         e.preventDefault()

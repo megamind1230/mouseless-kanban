@@ -17,6 +17,8 @@ interface AppSettings {
   theme: string
   cardCounter: string
   sessionRestore: boolean
+  zoomLevel: number
+  foldedByPath: Record<string, string[]>
 }
 
 const DEFAULT_SETTINGS: AppSettings = {
@@ -25,6 +27,8 @@ const DEFAULT_SETTINGS: AppSettings = {
   theme: 'tokyo-night',
   cardCounter: 'pending',
   sessionRestore: true,
+  zoomLevel: 0,
+  foldedByPath: {},
 }
 
 function loadSettings(): AppSettings {
@@ -75,6 +79,8 @@ function createWindow() {
     }
   }
 
+  mainWindow.webContents.setZoomLevel(loadSettings().zoomLevel || 0)
+
   appendLog('Window created')
 }
 
@@ -117,7 +123,7 @@ function registerIpcHandlers() {
   ipcMain.handle('file:open', async () => {
     const result = await dialog.showOpenDialog({
       properties: ['openFile'],
-      filters: [{ name: 'Markdown', extensions: ['md'] }]
+      filters: [{ name: 'Kanban boards', extensions: ['md', 'org'] }]
     })
     if (result.canceled || result.filePaths.length === 0) return null
     const filePath = result.filePaths[0]
@@ -152,7 +158,7 @@ function registerIpcHandlers() {
           // skip hidden dirs and node_modules
           if (entry.name.startsWith('.') || entry.name === 'node_modules') continue
           walk(full)
-        } else if (entry.name.endsWith('.md')) {
+        } else if (entry.name.endsWith('.md') || entry.name.endsWith('.org')) {
           results.push({
             name: entry.name,
             relativePath: path.relative(vaultPath, full),
@@ -169,19 +175,22 @@ function registerIpcHandlers() {
   // Create new kanban board in vault
   ipcMain.handle('file:create-in-vault', async (_event, vaultPath: string, name: string) => {
     if (!vaultPath) return null
-    const safeName = name.replace(/[/\\]/g, '_').replace(/\.md$/, '') || 'Untitled Board'
-    const filePath = path.join(vaultPath, `${safeName}.md`)
+    const safeName = name.replace(/[/\\]/g, '_').trim() || 'Untitled Board'
+    const ext = /\.(md|org)$/i.test(safeName) ? '' : '.md'
+    const filePath = path.join(vaultPath, safeName + ext)
 
     if (fs.existsSync(filePath)) return { filePath, content: fs.readFileSync(filePath, 'utf-8') }
 
-    const content = [
-      '---',
-      'kanban-plugin: board',
-      '---',
-      '',
-      '## Todo',
-      '',
-    ].join('\n')
+    const content = filePath.toLowerCase().endsWith('.org')
+      ? ['** Todo', ''].join('\n')
+      : [
+          '---',
+          'kanban-plugin: board',
+          '---',
+          '',
+          '## Todo',
+          '',
+        ].join('\n')
 
     fs.writeFileSync(filePath, content, 'utf-8')
     appendLog(`Created in vault: ${filePath}`)
@@ -194,21 +203,31 @@ function registerIpcHandlers() {
   })
 
   // Zoom
+  function persistZoom(level: number) {
+    const s = loadSettings()
+    saveSettings({ ...s, zoomLevel: level })
+  }
+
   ipcMain.handle('zoom:in', () => {
     if (mainWindow) {
-      const current = mainWindow.webContents.getZoomLevel()
-      mainWindow.webContents.setZoomLevel(current + 0.5)
+      const level = mainWindow.webContents.getZoomLevel() + 0.5
+      mainWindow.webContents.setZoomLevel(level)
+      persistZoom(level)
     }
   })
 
   ipcMain.handle('zoom:out', () => {
     if (mainWindow) {
-      const current = mainWindow.webContents.getZoomLevel()
-      mainWindow.webContents.setZoomLevel(current - 0.5)
+      const level = mainWindow.webContents.getZoomLevel() - 0.5
+      mainWindow.webContents.setZoomLevel(level)
+      persistZoom(level)
     }
   })
 
   ipcMain.handle('zoom:reset', () => {
-    if (mainWindow) mainWindow.webContents.setZoomLevel(0)
+    if (mainWindow) {
+      mainWindow.webContents.setZoomLevel(0)
+      persistZoom(0)
+    }
   })
 }

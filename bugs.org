@@ -1,11 +1,7 @@
 * Bugs Tracker
 ** Known Issues
-*** [ ] Command palette doesn't close on outside click
-- File: =src/components/CommandPalette.tsx=
-- Cause: Overlay click closes, but no keyboard shortcut to close without Esc.
-- Minor: Esc works fine, just not discoverable.
 *** [ ] Lane menu doesn't close on outside click
-- File: =src/components/Lane.tsx=
+- File: =src/components/Lane.tsx= / =src/components/LaneMenu.tsx=
 - Cause: Menu only closes via Esc or clicking an option. No blur/click-outside handler.
 - Fix: Add a click-outside listener or overlay behind the menu.
 
@@ -23,6 +19,30 @@
 - Dev script: =node scripts/dev.mjs= handles Vite + Electron with correct flags.
 
 ** Fixed
+*** [x] Search n/N keys were swallowed while typing in search box
+- File: =src/components/SearchBar.tsx=
+- Cause: Global keydown handler captured n/N for next/previous match even with the search input focused.
+- Fix: =e.stopPropagation()= in SearchBar's handleKeyDown; useKeys also ignores all hotkeys on editable targets except Esc.
+
+*** [x] Creating a board mangled the filename
+- File: =electron/main.ts=, =src/components/Prompt.tsx= (deleted)
+- Cause: Ctrl+Shift+N created "new.org" as "new.org.md" and dropped letters when typing fast (keydown capture).
+- Fix: =file:create-in-vault= now preserves =.md= / =.org= extensions; names validated to end in one of them. Superseded by the Alt+Q quick switcher.
+
+*** [x] .org boards were written in .md format
+- File: =src/core/parser.ts=
+- Cause: =serialize= always emitted =##= lanes + frontmatter regardless of extension.
+- Fix: =formatFromPath()= + =serialize(board, format)= write org syntax (=**= lanes, no frontmatter, =# kanban:settings=) for =.org= files.
+
+*** [x] Zoom level reset on every launch
+- Fix: Zoom stored in settings (=zoomLevel=) and applied at window creation.
+
+*** [x] Folded lanes reset on every launch
+- Fix: Fold state persisted per board by lane name (=foldedByPath=) and restored after parse.
+
+*** [x] Command palette didn't close on outside click
+- Fix: Overlay =onClick= closes it (=src/components/CommandPalette.tsx=).
+
 *** [x] Ctrl+S didn't save file
 - Cause: Stale closure over filePath/board in keyboard handler. Auto-save cleanup cancelled pending writes.
 - Fix: Ctrl+S now calls saveNow() via ref-based hook. Board/filePath read from refs, never stale.

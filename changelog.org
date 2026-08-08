@@ -1,4 +1,19 @@
 * Changelog
+** [2026-08-08] — Quick Switcher, .org Support, Persistence
+- Quick switcher =Alt+Q=: single function to open an existing board (fuzzy) or create a new one inline
+- Removed =Ctrl+O= (open board) and =Ctrl+Shift+N= (new board) — superseded by Alt+Q
+- Deleted Prompt.tsx (inline creation in the quick switcher replaces the name-prompt modal)
+- .org file format support: reads/writes =**= lane headings, no frontmatter, =# kanban:settings= comments
+- Parser is format-agnostic (accepts =##= and =**= lanes) so old files migrate on autosave
+- =formatFromPath()= picks md vs org serialization from the =.md= / =.org= extension
+- New =.org= boards get a =** Todo= template; board names must end in =.md= or =.org=
+- Zoom level persisted across sessions (=zoomLevel= setting)
+- Folded-lane state persisted per board by lane name (=foldedByPath= setting)
+- Editable-target guard: all hotkeys disabled while an input is focused (except Esc)
+- Settings now a full-screen overlay, closed with Esc
+- Removed eslint entirely (TypeScript 7 native compiler has no JS API; typescript-eslint incompatible)
+- 86 tests passing, TypeScript clean
+
 ** [2026-07-26] — Project Start
 - Created project structure and .org files
 - Defined architecture: Electron + React + TypeScript

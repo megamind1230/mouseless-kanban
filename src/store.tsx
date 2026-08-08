@@ -46,6 +46,9 @@ function reducer(state: AppState, action: BoardAction): AppState {
     case 'SET_BOARD':
       return { ...state, board: action.board, activeLane: 0, activeCard: 0 }
 
+    case 'SET_FOLDED_LANES':
+      return { ...state, foldedLanes: action.ids }
+
     case 'SET_ACTIVE_LANE':
       return { ...state, activeLane: action.index, activeCard: 0, selectedIds: [], selectionMode: 'none', visualAnchor: null, preVisualIds: [] }
 

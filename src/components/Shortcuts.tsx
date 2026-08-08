@@ -74,8 +74,7 @@ const sections = [
   {
     title: 'File',
     shortcuts: [
-      ['Ctrl+O', 'Open board (fuzzy finder)'],
-      ['Ctrl+Shift+N', 'New board in vault'],
+      ['Alt+Q', 'Quick switcher: open or create board'],
       ['Ctrl+,', 'Settings'],
       ['Ctrl+Q', 'Quit'],
     ]

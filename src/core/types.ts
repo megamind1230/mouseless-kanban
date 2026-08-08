@@ -22,6 +22,7 @@ export interface Board {
 
 export type BoardAction =
   | { type: 'SET_BOARD'; board: Board }
+  | { type: 'SET_FOLDED_LANES'; ids: string[] }
   | { type: 'SET_ACTIVE_LANE'; index: number }
   | { type: 'SET_ACTIVE_CARD'; index: number }
   | { type: 'ENTER_INSERT' }

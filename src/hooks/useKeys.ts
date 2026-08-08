@@ -7,14 +7,13 @@ interface UseKeysProps {
   setShowPicker: (v: boolean) => void
   dispatch: React.Dispatch<BoardAction>
   setShowSettings: (v: boolean) => void
-  handleNewInVault: () => void
   showShortcuts: boolean
   setShowShortcuts: React.Dispatch<React.SetStateAction<boolean>>
   showCmdPalette: boolean
   setShowCmdPalette: React.Dispatch<React.SetStateAction<boolean>>
 }
 
-export function useKeys({ showPicker, setShowPicker, dispatch, setShowSettings, handleNewInVault, showShortcuts, setShowShortcuts, showCmdPalette, setShowCmdPalette }: UseKeysProps) {
+export function useKeys({ showPicker, setShowPicker, dispatch, setShowSettings, showShortcuts, setShowShortcuts, showCmdPalette, setShowCmdPalette }: UseKeysProps) {
   const state = useBoardState()
   const ref = useRef(state)
   ref.current = state
@@ -42,16 +41,18 @@ export function useKeys({ showPicker, setShowPicker, dispatch, setShowSettings, 
     const handler = (e: KeyboardEvent) => {
       const s = ref.current
 
+      const target = e.target as HTMLElement | null
+      const isEditable = !!target && (
+        target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' ||
+        target.tagName === 'SELECT' || target.isContentEditable
+      )
+      if (isEditable && e.key !== 'Escape') return
+
       if (e.key === '?' || e.key === 'F1') { e.preventDefault(); setShowShortcuts(v => !v); return }
       if (e.ctrlKey && e.key === 'p') { e.preventDefault(); setShowCmdPalette(v => !v); return }
       if (e.ctrlKey && e.key === ',') { e.preventDefault(); setShowSettings(true); return }
-      if (e.ctrlKey && e.key === 'o') { e.preventDefault(); setShowPicker(true); return }
+      if (e.altKey && e.key.toLowerCase() === 'q') { e.preventDefault(); setShowPicker(true); return }
       if (e.ctrlKey && e.key === 'q') { e.preventDefault(); window.api.quit(); return }
-      if (e.ctrlKey && e.shiftKey && e.key === 'N') {
-        e.preventDefault()
-        handleNewInVault()
-        return
-      }
       if (e.ctrlKey && e.key === 'n') { e.preventDefault(); dispatch({ type: 'ADD_LANE' }); return }
       if (e.ctrlKey && e.code === 'Backquote') { e.preventDefault(); dispatch({ type: 'TOGGLE_ARCHIVE' }); return }
 
@@ -232,5 +233,5 @@ export function useKeys({ showPicker, setShowPicker, dispatch, setShowSettings, 
     return () => {
       window.removeEventListener('keydown', handler)
     }
-  }, [showPicker, setShowPicker, dispatch, setShowSettings, handleNewInVault, showShortcuts, setShowShortcuts, showCmdPalette, setShowCmdPalette])
+  }, [showPicker, setShowPicker, dispatch, setShowSettings, showShortcuts, setShowShortcuts, showCmdPalette, setShowCmdPalette])
 }

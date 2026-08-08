@@ -1,5 +1,11 @@
 import type { Board, Lane, Card } from './types'
 
+export type BoardFormat = 'md' | 'org'
+
+export function formatFromPath(p: string | null): BoardFormat {
+  return p?.toLowerCase().endsWith('.org') ? 'org' : 'md'
+}
+
 let idCounter = 0
 function genId(): string {
   return `k${Date.now().toString(36)}-${(idCounter++).toString(36)}`
@@ -58,8 +64,15 @@ export function parse(markdown: string): Board {
       continue
     }
 
-    // Lane heading: ## Name
-    const laneMatch = line.match(/^## (.+)$/)
+    // Org settings comment: # kanban:settings {json}
+    const orgSettings = line.match(/^#\s*kanban:settings\s+(.+)$/)
+    if (orgSettings) {
+      try { settings = JSON.parse(orgSettings[1].trim()) } catch { /* skip */ }
+      continue
+    }
+
+    // Lane heading: ## Name (md) or ** Name (org)
+    const laneMatch = line.match(/^(?:##|\*\*) (.+)$/)
     if (laneMatch) {
       const name = laneMatch[1].trim()
       const isArchive = /^archive$/i.test(name)
@@ -130,14 +143,18 @@ export function parse(markdown: string): Board {
   return { frontmatter, preamble, lanes, settings, archivedCards }
 }
 
-export function serialize(board: Board): string {
+export function serialize(board: Board, format: BoardFormat = 'md'): string {
   const parts: string[] = []
+  const isOrg = format === 'org'
+  const heading = (name: string) => isOrg ? `** ${name}` : `## ${name}`
 
   // Frontmatter
-  if (board.frontmatter) {
-    parts.push(board.frontmatter)
-  } else {
-    parts.push('---\nkanban-plugin: board\n---')
+  if (!isOrg) {
+    if (board.frontmatter) {
+      parts.push(board.frontmatter)
+    } else {
+      parts.push('---\nkanban-plugin: board\n---')
+    }
   }
 
   // Preamble
@@ -149,7 +166,7 @@ export function serialize(board: Board): string {
   // Lanes and cards
   for (const lane of board.lanes) {
     parts.push('')
-    parts.push(`## ${lane.name}`)
+    parts.push(heading(lane.name))
     for (const card of lane.cards) {
       const checkbox = card.status === 'done' ? '[x]' : card.status === 'doing' ? '[-]' : '[ ]'
       if (card.title.includes('\n')) {
@@ -166,13 +183,15 @@ export function serialize(board: Board): string {
   // Settings
   if (board.settings) {
     parts.push('')
-    parts.push(`%% kanban:settings ${JSON.stringify(board.settings)} %%`)
+    parts.push(isOrg
+      ? `# kanban:settings ${JSON.stringify(board.settings)}`
+      : `%% kanban:settings ${JSON.stringify(board.settings)} %%`)
   }
 
   // Archive
   if (board.archivedCards && board.archivedCards.length > 0) {
     parts.push('')
-    parts.push('## Archive')
+    parts.push(heading('Archive'))
     for (const card of board.archivedCards) {
       const checkbox = card.status === 'done' ? '[x]' : card.status === 'doing' ? '[-]' : '[ ]'
       if (card.title.includes('\n')) {

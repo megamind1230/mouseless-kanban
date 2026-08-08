@@ -1,7 +1,7 @@
-* Mouseless Mindmap — Build Plan
+* Mouseless Kanban — Build Plan
 ** DONE Phase 1 — Scaffold
-- [X] Create logs dir at ~/magnus/mouseless-mindmap/logs/
-- [X] Create .org files (plan-todos, bugs, README, changelog, LICENCE)
+- [X] Create logs dir at ~/magnus/mouseless-kanban/logs/
+- [X] Create .org files (plans-and-todos, bugs, README, changelog, LICENCE)
 - [X] Init npm project + install deps (electron, vite, react, typescript)
 - [X] electron-vite config (main + preload + renderer)
 - [X] Basic Electron main process + BrowserWindow
@@ -42,9 +42,8 @@
 - [X] r = rename lane, e = lane menu (rename/move/delete)
 - [X] x = toggle checkbox, dd = delete, yy = copy, p = paste
 - [X] u = undo (preserves cursor position)
-- [X] Ctrl+n = new lane, Ctrl+o = fuzzy open
-- [X] Ctrl+Shift+n = new kanban file in vault
-- [X] Ctrl+, = settings, Ctrl+s = save, Ctrl+q = quit
+- [X] Ctrl+n = new lane, Alt+Q = quick switcher (open / create board)
+- [X] Ctrl+, = settings, Ctrl+q = quit
 - [X] ? / F1 = shortcuts manual
 - [X] Ctrl+p = command palette
 
@@ -53,8 +52,8 @@
 - [X] Settings stored in Electron userData/settings.json
 - [X] FuzzyPicker scans vault folder recursively for .md files
 - [X] Shows file name + relative path in results
-- [X] Ctrl+Shift+N creates kanban .md in vault with proper template
-- [X] Prompt.tsx: inline input for board name (replaces prompt())
+- [X] Quick switcher (Alt+Q): fuzzy-open existing board OR create a new one inline
+- [X] New-board names must end in .md or .org (extension-validated, proper template)
 
 ** DONE Phase 7 — Selection + Multi-Op
 - [X] Space = non-contiguous multi-select (toggle individual cards)
@@ -129,6 +128,19 @@
 - [X] Overflow text wrapping + scrollbar separation padding
 - [X] Theme-matched scrollbars (dark themes / white for light)
 
+** DONE Phase 12: Org Format, Persistence, Quick Switcher
+- [X] .org file format support (no frontmatter, =**= lane headings, =# kanban:settings=)
+- [X] Parser is format-agnostic: reads both =##= (md) and =**= (org) lanes
+- [X] =serialize(board, format)= writes md or org based on file extension
+- [X] =formatFromPath()= picks format from =.md= / =.org= file extension
+- [X] .org new-board template (=** Todo=) in file:create-in-vault
+- [X] Zoom level persisted across sessions (=zoomLevel= setting)
+- [X] Folded-lane state persisted per board by lane name (=foldedByPath= setting)
+- [X] Editable-target guard: all hotkeys disabled while typing in an input (except Esc)
+- [X] Settings is a full-screen overlay, closed with Esc
+- [X] Quick switcher Alt+Q replaces Ctrl+O (open) and Ctrl+Shift+N (new board)
+- [X] Deleted Prompt.tsx (inline create in quick switcher supersedes it)
+
 ** frozen/later
 *** Views & UI
 - [ ] Minimap / overview mode (bird's-eye view of all lanes)
@@ -141,7 +153,6 @@
 - [ ] Custom CSS themes (light mode, high contrast, etc.)
 
 *** File & Vault
-- [ ] .org file format support (org-mode kanban boards)
 - [ ] Multiple vault support (switch between vaults)
 - [ ] Recent files list (Ctrl+R)
 - [ ] File Watcher: reload when .md changes externally
@@ -157,8 +168,8 @@
 - [ ] i18n / localization support
 
 *** Testing
-- [ ] Parser round-trip test (Vitest)
-- [ ] Unit tests for store reducer (all action types)
+- [X] Parser round-trip test (Vitest)
+- [X] Unit tests for store reducer (all action types)
 - [ ] Integration tests for keyboard shortcuts
 - [ ] E2E tests with Playwright
 - [ ] CI/CD pipeline (GitHub Actions)

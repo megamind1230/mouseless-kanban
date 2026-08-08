@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect, useRef } from 'react'
 import { useBoardState } from '../store'
-import { serialize } from '../core/parser'
+import { serialize, formatFromPath } from '../core/parser'
 
 export interface VaultFile {
   name: string
@@ -13,6 +13,8 @@ interface AppSettings {
   theme: string
   cardCounter: string
   sessionRestore: boolean
+  zoomLevel: number
+  foldedByPath: Record<string, string[]>
 }
 
 declare global {
@@ -45,7 +47,8 @@ export function useFile() {
   const [cardCounter, setCardCounter] = useState('pending')
   const [sessionRestore, setSessionRestore] = useState(true)
   const [settingsLoaded, setSettingsLoaded] = useState(false)
-  const { board } = useBoardState()
+  const [foldedByPath, setFoldedByPath] = useState<Record<string, string[]>>({})
+  const { board, foldedLanes } = useBoardState()
   const savedRef = useRef<string>('')
   const filePathRef = useRef<string | null>(null)
   const boardRef = useRef(board)
@@ -58,6 +61,7 @@ export function useFile() {
       setTheme(s.theme)
       setCardCounter(s.cardCounter)
       setSessionRestore(s.sessionRestore)
+      setFoldedByPath(s.foldedByPath || {})
       setSettingsLoaded(true)
       if (s.sessionRestore && s.lastBoardPath) {
         window.api.readFile(s.lastBoardPath).then(r => {
@@ -87,7 +91,7 @@ export function useFile() {
     const p = filePathRef.current
     const b = boardRef.current
     if (!p || !b) return
-    const snap = serialize(b)
+    const snap = serialize(b, formatFromPath(p))
     window.api.saveFile(p, snap)
     savedRef.current = snap
     setDirty(false)
@@ -96,7 +100,7 @@ export function useFile() {
   // Auto-save via setInterval (not useEffect cleanup — can't cancel a write already in flight)
   useEffect(() => {
     if (!board || !filePath) return
-    const snap = serialize(board)
+    const snap = serialize(board, formatFromPath(filePath))
     if (snap === savedRef.current) return
     setDirty(true)
     const t = setTimeout(() => {
@@ -106,6 +110,18 @@ export function useFile() {
     }, AUTOSAVE_MS)
     return () => clearTimeout(t)
   }, [board, filePath])
+
+  // Persist folded lanes (by lane name) for the current board
+  useEffect(() => {
+    if (!filePath || !board || !settingsLoaded) return
+    const foldedNames = board.lanes.filter(l => foldedLanes.includes(l.id)).map(l => l.name)
+    if (JSON.stringify(foldedByPath[filePath] || []) === JSON.stringify(foldedNames)) return
+    const next = { ...foldedByPath, [filePath]: foldedNames }
+    setFoldedByPath(next)
+    window.api.getSettings().then(current => {
+      window.api.saveSettings({ ...current, foldedByPath: next })
+    })
+  }, [board, filePath, foldedLanes, foldedByPath, settingsLoaded])
 
   const persistLastBoard = useCallback(async (p: string) => {
     const current = await window.api.getSettings()
@@ -136,5 +152,5 @@ export function useFile() {
     }
   }, [persistLastBoard])
 
-  return { filePath, content, dirty, vaultPath, theme, cardCounter, sessionRestore, settingsLoaded, openFile, openByPath, saveNow, saveSettings }
+  return { filePath, content, dirty, vaultPath, theme, cardCounter, sessionRestore, foldedByPath, settingsLoaded, openFile, openByPath, saveNow, saveSettings }
 }

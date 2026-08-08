@@ -5,7 +5,6 @@ import BoardView from './components/Board'
 import StatusBar from './components/StatusBar'
 import FuzzyPicker from './components/FuzzyPicker'
 import Settings from './components/Settings'
-import Prompt from './components/Prompt'
 import Shortcuts from './components/Shortcuts'
 import CommandPalette from './components/CommandPalette'
 import LanePicker from './components/LanePicker'
@@ -25,12 +24,11 @@ export default function App() {
 function AppInner() {
   const [showPicker, setShowPicker] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
-  const [showNewPrompt, setShowNewPrompt] = useState(false)
   const [showShortcuts, setShowShortcuts] = useState(false)
   const [showCmdPalette, setShowCmdPalette] = useState(false)
   const [showLanePicker, setShowLanePicker] = useState(false)
   const [showMergePicker, setShowMergePicker] = useState(false)
-  const { filePath, content, dirty, vaultPath, theme, cardCounter, sessionRestore, openFile, openByPath, saveSettings } = useFile()
+  const { filePath, content, dirty, vaultPath, theme, cardCounter, sessionRestore, foldedByPath, openFile, openByPath, saveSettings } = useFile()
   const dispatch = useBoardDispatch()
   const { board, activeLane, searchQuery, showArchive } = useBoardState()
 
@@ -40,13 +38,20 @@ function AppInner() {
     }
   }, [content, dispatch])
 
+  // Restore folded lanes for the current board
+  useEffect(() => {
+    if (!board || !filePath || !foldedByPath) return
+    const saved = foldedByPath[filePath] || []
+    const ids = board.lanes.filter(l => saved.includes(l.name)).map(l => l.id)
+    dispatch({ type: 'SET_FOLDED_LANES', ids })
+  }, [board, filePath, foldedByPath, dispatch])
+
   // Handle commands dispatched from command palette
   useEffect(() => {
     const handler = (e: Event) => {
       const cmd = (e as CustomEvent).detail
       switch (cmd) {
-        case 'open': setShowPicker(true); break
-        case 'new-file': handleNewInVault(); break
+        case 'quick-switch': setShowPicker(true); break
         case 'settings': setShowSettings(true); break
         case 'shortcuts': setShowShortcuts(v => !v); break
         case 'move-card-to-lane': setShowLanePicker(true); break
@@ -67,13 +72,7 @@ function AppInner() {
     return () => document.removeEventListener('cmd', handler)
   }, [board, activeLane])
 
-  const handleNewInVault = useCallback(() => {
-    if (!vaultPath) { setShowSettings(true); return }
-    setShowNewPrompt(true)
-  }, [vaultPath])
-
   const handleCreateFile = useCallback(async (name: string) => {
-    setShowNewPrompt(false)
     if (!vaultPath) return
     const r = await window.api.createInVault(vaultPath, name)
     if (r) {
@@ -87,7 +86,7 @@ function AppInner() {
     document.body.className = `theme-${theme}`
   }, [theme])
 
-  useKeys({ showPicker, setShowPicker, dispatch, setShowSettings, handleNewInVault, showShortcuts, setShowShortcuts, showCmdPalette, setShowCmdPalette })
+  useKeys({ showPicker, setShowPicker, dispatch, setShowSettings, showShortcuts, setShowShortcuts, showCmdPalette, setShowCmdPalette })
 
   return (
     <div className={`app theme-${theme}`}>
@@ -100,14 +99,6 @@ function AppInner() {
           sessionRestore={sessionRestore}
           onSave={saveSettings}
           onClose={() => setShowSettings(false)}
-        />
-      )}
-      {showNewPrompt && (
-        <Prompt
-          title="New Kanban Board"
-          placeholder="Board name"
-          onSubmit={handleCreateFile}
-          onClose={() => setShowNewPrompt(false)}
         />
       )}
       {showShortcuts && (
@@ -123,6 +114,7 @@ function AppInner() {
             if (vaultPath) openByPath(vaultPath + '/' + relPath)
             setShowPicker(false)
           }}
+          onCreate={handleCreateFile}
           onClose={() => setShowPicker(false)}
         />
       )}
@@ -155,7 +147,7 @@ function AppInner() {
         <div className="empty-state">
           <p>No file open</p>
           <p className="hint">Ctrl+P for command palette</p>
-          <p className="hint">Ctrl+O to open a kanban board</p>
+          <p className="hint">Alt+Q to open or create a kanban board</p>
           {!vaultPath && <p className="hint">Ctrl+, to set vault path</p>}
         </div>
       )}

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import CounterBadge from './CounterBadge'
 
 const THEMES = [
@@ -29,6 +29,14 @@ export default function Settings({ vaultPath, theme, cardCounter, sessionRestore
   const [selCounter, setSelCounter] = useState(cardCounter)
   const [selSession, setSelSession] = useState(sessionRestore)
 
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose()
+    }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [onClose])
+
   async function pickFolder() {
     const picked = await window.api.pickVault()
     if (picked) setPath(picked)
@@ -40,9 +48,11 @@ export default function Settings({ vaultPath, theme, cardCounter, sessionRestore
   }
 
   return (
-    <div className="picker-overlay" onClick={onClose}>
-      <div className="picker-modal" onClick={e => e.stopPropagation()} style={{ maxHeight: '80vh' }}>
+    <div className="settings-overlay">
+      <div className="picker-modal settings-modal">
         <h2 className="settings-title">Settings</h2>
+
+        <div className="settings-body">
 
         <div className="settings-section">
           <h3 className="settings-section-title">General</h3>
@@ -119,6 +129,7 @@ export default function Settings({ vaultPath, theme, cardCounter, sessionRestore
           </div>
         </div>
 
+        </div>
         <div className="settings-actions">
           <button className="settings-btn settings-btn--secondary" onClick={onClose}>Cancel</button>
           <button className="settings-btn settings-btn--primary" onClick={handleSave}>Save</button>
