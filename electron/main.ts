@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, dialog } from 'electron'
+import { app, BrowserWindow, ipcMain, dialog, shell } from 'electron'
 import path from 'path'
 import fs from 'fs'
 
@@ -200,6 +200,13 @@ function registerIpcHandlers() {
   ipcMain.handle('app:quit', () => {
     appendLog('Quit requested')
     app.quit()
+  })
+
+  ipcMain.handle('app:open-external', async (_event, url: string) => {
+    if (!/^https?:\/\//.test(url)) return false
+    await shell.openExternal(url)
+    appendLog(`Opened external: ${url}`)
+    return true
   })
 
   // Zoom

@@ -1,6 +1,6 @@
 * Mouseless Kanban — Build Plan
 ** DONE Phase 1 — Scaffold
-- [X] Create logs dir at ~/magnus/mouseless-kanban/logs/
+- [X] Create logs dir at ~/magnus/mouseless-mindmap/logs/
 - [X] Create .org files (plans-and-todos, bugs, README, changelog, LICENCE)
 - [X] Init npm project + install deps (electron, vite, react, typescript)
 - [X] electron-vite config (main + preload + renderer)
@@ -140,6 +140,13 @@
 - [X] Settings is a full-screen overlay, closed with Esc
 - [X] Quick switcher Alt+Q replaces Ctrl+O (open) and Ctrl+Shift+N (new board)
 - [X] Deleted Prompt.tsx (inline create in quick switcher supersedes it)
+
+** DONE Phase 13 — Open Link (gx)
+- [X] =gx= opens the first http/https URL from the active card's title in the default browser
+- [X] =extractUrl()= supports bare URLs, markdown =[label](url)=, org =[[url]]= / =[[url][label]]=
+- [X] =app:open-external= IPC handler (http/https only, validated in main process)
+- [X] "Open Link in Card" command in the Ctrl+P palette
+- [X] Unit tests for =extractUrl()= (93 total)
 
 ** frozen/later
 *** Views & UI

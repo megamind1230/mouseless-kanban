@@ -1,4 +1,11 @@
 * Changelog
+** [2026-08-08] — Open Link (gx)
+- =gx= opens the first http/https URL from the active card's title in the default browser
+- =extractUrl()= supports bare URLs, markdown =[label](url)=, and org =[[url]]= / =[[url][label]]=
+- New =app:open-external= IPC handler (http/https only, validated in main process)
+- Added to command palette as "Open Link in Card"
+- 93 tests passing, TypeScript clean
+
 ** [2026-08-08] — Quick Switcher, .org Support, Persistence
 - Quick switcher =Alt+Q=: single function to open an existing board (fuzzy) or create a new one inline
 - Removed =Ctrl+O= (open board) and =Ctrl+Shift+N= (new board) — superseded by Alt+Q

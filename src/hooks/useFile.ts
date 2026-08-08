@@ -29,6 +29,7 @@ declare global {
       listVault: (vaultPath: string) => Promise<VaultFile[]>
       createInVault: (vaultPath: string, name: string) => Promise<{ filePath: string; content: string } | null>
       quit: () => Promise<void>
+      openExternal: (url: string) => Promise<boolean>
       zoomIn: () => Promise<void>
       zoomOut: () => Promise<void>
       zoomReset: () => Promise<void>

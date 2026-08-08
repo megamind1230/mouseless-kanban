@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { useBoardState } from '../store'
 import type { BoardAction } from '../core/types'
+import { extractUrl } from '../core/links'
 
 interface UseKeysProps {
   showPicker: boolean
@@ -100,6 +101,14 @@ export function useKeys({ showPicker, setShowPicker, dispatch, setShowSettings, 
         if (!e.shiftKey && e.key === 'b') { e.preventDefault(); lastKey.current = null; dispatch({ type: 'MOVE_CARD_TO_BOTTOM' }); return }
         if (!e.shiftKey && e.key === 'a') { e.preventDefault(); lastKey.current = null; if (lane && card) dispatch({ type: 'ARCHIVE_CARD', laneId: lane.id, cardId: card.id }); return }
         if (e.key === 'A') { e.preventDefault(); lastKey.current = null; dispatch({ type: 'ARCHIVE_ALL_DONE' }); return }
+        if (!e.shiftKey && e.key === 'x') {
+          e.preventDefault(); lastKey.current = null
+          if (card) {
+            const url = extractUrl(card.title)
+            if (url) window.api.openExternal(url)
+          }
+          return
+        }
       }
 
       // Lowercase = navigate

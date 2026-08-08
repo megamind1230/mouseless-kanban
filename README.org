@@ -36,6 +36,7 @@ move cards, dd/yy/p clipboard, / search, visual selection.
 - Card statuses: todo / in-progress / done — =-= toggles [ ] / [-], =x= toggles [x]
 - j/k scroll-follow keeps the active card in view; h/l follows lanes
 - Overflow-safe text wrapping and theme-matched scrollbars
+- =gx= opens the first http/https link from the active card in the default browser
 
 ** Tech Stack
 | Layer    | Technology           |
@@ -45,7 +46,7 @@ move cards, dd/yy/p clipboard, / search, visual selection.
 | Language | TypeScript 5.x       |
 | UI       | React 19             |
 | State    | useReducer + Context |
-| Test     | Vitest (86 tests)     |
+| Test     | Vitest (93 tests)     |
 
 ** Keyboard Shortcuts
 *** Navigation
@@ -92,6 +93,7 @@ move cards, dd/yy/p clipboard, / search, visual selection.
 | Enter       | Finish editing (commit)                |
 | Escape      | Finish editing / deselect / close menu |
 | x           | Toggle checkbox [ ] / [x]             |
+| gx          | Open link in card (default browser)   |
 | -           | Toggle in-progress [ ] / [-]          |
 | dd          | Delete card (double-tap d)            |
 | yy          | Copy card (double-tap y)              |
@@ -152,6 +154,7 @@ move cards, dd/yy/p clipboard, / search, visual selection.
 | New Card Below           | o        |
 | New Card Above           | O        |
 | Toggle Checkbox          | x        |
+| Open Link in Card        | gx       |
 | Toggle In-Progress       | -        |
 | Delete Card              | dd       |
 | Paste Card               | p        |
@@ -360,6 +363,7 @@ mouseless-kanban/
 │   │   ├── types.ts       # Board, Lane, Card, BoardAction
 │   │   ├── parser.ts      # Obsidian .md / .org ↔ Board
 │   │   ├── fuzzy.ts       # Fuzzy string matching
+│   │   ├── links.ts       # URL extraction (gx open-link)
 │   │   └── commands.ts    # Command palette registry
 │   ├── hooks/
 │   │   ├── useKeys.ts     # Keyboard engine (hjkl/HJKL/dd/yy)

@@ -15,6 +15,7 @@ contextBridge.exposeInMainWorld('api', {
 
   // App
   quit: () => ipcRenderer.invoke('app:quit'),
+  openExternal: (url: string) => ipcRenderer.invoke('app:open-external', url),
 
   // Zoom
   zoomIn: () => ipcRenderer.invoke('zoom:in'),

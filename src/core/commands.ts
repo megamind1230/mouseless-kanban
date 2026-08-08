@@ -1,5 +1,6 @@
 import type { Dispatch } from 'react'
 import type { BoardAction, Lane, Card } from '../core/types'
+import { extractUrl } from './links'
 
 export interface Command {
   id: string
@@ -238,6 +239,18 @@ export const commands: Command[] = [
     shortcut: 'x',
     category: 'Card',
     action: (d, lane, card) => { if (lane && card) d({ type: 'TOGGLE_CARD', laneId: lane.id, cardId: card.id }) },
+  },
+  {
+    id: 'open-link',
+    label: 'Open Link in Card',
+    shortcut: 'gx',
+    category: 'Card',
+    action: (_, __, card) => {
+      if (card) {
+        const url = extractUrl(card.title)
+        if (url) window.api.openExternal(url)
+      }
+    },
   },
   {
     id: 'toggle-in-progress',
