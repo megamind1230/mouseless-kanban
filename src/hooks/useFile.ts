@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect, useRef } from 'react'
-import { useBoardState } from '../store'
+import { useBoardState, useBoardDispatch } from '../store'
 import { serialize, formatFromPath } from '../core/parser'
 
 export interface VaultFile {
@@ -50,6 +50,8 @@ export function useFile() {
   const [settingsLoaded, setSettingsLoaded] = useState(false)
   const [foldedByPath, setFoldedByPath] = useState<Record<string, string[]>>({})
   const { board, foldedLanes } = useBoardState()
+  const dispatch = useBoardDispatch()
+  const restoredPathRef = useRef<string | null>(null)
   const savedRef = useRef<string>('')
   const filePathRef = useRef<string | null>(null)
   const boardRef = useRef(board)
@@ -112,9 +114,21 @@ export function useFile() {
     return () => clearTimeout(t)
   }, [board, filePath])
 
-  // Persist folded lanes (by lane name) for the current board
+  // Restore folded lanes when a board first loads, then persist user changes.
+  // Restore and persist live in one effect so the persist branch never runs
+  // with stale (empty) foldedLanes before restore applies — previously the two
+  // separate effects raced, wiping saved folds and causing a launch flicker.
   useEffect(() => {
-    if (!filePath || !board || !settingsLoaded) return
+    if (!board || !filePath || !settingsLoaded) return
+
+    if (restoredPathRef.current !== filePath) {
+      restoredPathRef.current = filePath
+      const saved = foldedByPath[filePath] || []
+      const ids = board.lanes.filter(l => saved.includes(l.name)).map(l => l.id)
+      dispatch({ type: 'SET_FOLDED_LANES', ids })
+      return
+    }
+
     const foldedNames = board.lanes.filter(l => foldedLanes.includes(l.id)).map(l => l.name)
     if (JSON.stringify(foldedByPath[filePath] || []) === JSON.stringify(foldedNames)) return
     const next = { ...foldedByPath, [filePath]: foldedNames }
@@ -122,7 +136,7 @@ export function useFile() {
     window.api.getSettings().then(current => {
       window.api.saveSettings({ ...current, foldedByPath: next })
     })
-  }, [board, filePath, foldedLanes, foldedByPath, settingsLoaded])
+  }, [board, filePath, foldedLanes, foldedByPath, settingsLoaded, dispatch])
 
   const persistLastBoard = useCallback(async (p: string) => {
     const current = await window.api.getSettings()

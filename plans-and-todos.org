@@ -148,6 +148,13 @@
 - [X] "Open Link in Card" command in the Ctrl+P palette
 - [X] Unit tests for =extractUrl()= (93 total)
 
+** DONE Phase 14 — Launch Fixes
+- [X] Folded-lane state restores reliably (single restore+persist effect in =useFile.ts=; fixes the launch flicker + lost fold state)
+- [X] Window opens with theme-matched background (=backgroundColor= from settings in =electron/main.ts=)
+- [X] Body background fallback (=var(--bg, #1a1b26)=) so no white flash pre-mount
+- [X] Empty-state hidden until settings load (no "No file open" flash during session restore)
+- [X] Regression test for fold restore/persist
+
 ** frozen/later
 *** Views & UI
 - [ ] Minimap / overview mode (bird's-eye view of all lanes)

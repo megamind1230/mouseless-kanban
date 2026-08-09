@@ -1,4 +1,11 @@
 * Changelog
+** [2026-08-09] — Launch Fixes
+- Folded-lane state restores reliably: single restore+persist effect in =useFile.ts= (previously two effects raced on first load — persist wrote =[]= before restore applied, wiping saved folds and causing a fold/unfold launch flicker)
+- Window opens theme-matched: =backgroundColor= from settings in =electron/main.ts= (no white flash before React mounts)
+- =body= background fallback =var(--bg, #1a1b26)= in =index.css= (no unthemed flash)
+- Empty state hidden until settings load (=settingsLoaded=) — no "No file open" flash during session restore
+- 94 tests passing, TypeScript clean
+
 ** [2026-08-08] — Open Link (gx)
 - =gx= opens the first http/https URL from the active card's title in the default browser
 - =extractUrl()= supports bare URLs, markdown =[label](url)=, and org =[[url]]= / =[[url][label]]=

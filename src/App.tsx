@@ -28,7 +28,7 @@ function AppInner() {
   const [showCmdPalette, setShowCmdPalette] = useState(false)
   const [showLanePicker, setShowLanePicker] = useState(false)
   const [showMergePicker, setShowMergePicker] = useState(false)
-  const { filePath, content, dirty, vaultPath, theme, cardCounter, sessionRestore, foldedByPath, openFile, openByPath, saveSettings } = useFile()
+  const { filePath, content, dirty, vaultPath, theme, cardCounter, sessionRestore, settingsLoaded, openFile, openByPath, saveSettings } = useFile()
   const dispatch = useBoardDispatch()
   const { board, activeLane, searchQuery, showArchive } = useBoardState()
 
@@ -37,14 +37,6 @@ function AppInner() {
       dispatch({ type: 'SET_BOARD', board: parse(content) })
     }
   }, [content, dispatch])
-
-  // Restore folded lanes for the current board
-  useEffect(() => {
-    if (!board || !filePath || !foldedByPath) return
-    const saved = foldedByPath[filePath] || []
-    const ids = board.lanes.filter(l => saved.includes(l.name)).map(l => l.id)
-    dispatch({ type: 'SET_FOLDED_LANES', ids })
-  }, [board, filePath, foldedByPath, dispatch])
 
   // Handle commands dispatched from command palette
   useEffect(() => {
@@ -141,7 +133,7 @@ function AppInner() {
         />
       )}
       {searchQuery !== null && <SearchBar />}
-      {board ? (
+      {!settingsLoaded ? null : board ? (
         <BoardView counterStyle={cardCounter as 'pending' | 'pending-total' | 'done-total' | 'total'} />
       ) : (
         <div className="empty-state">

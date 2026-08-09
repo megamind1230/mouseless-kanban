@@ -189,10 +189,11 @@ move cards, dd/yy/p clipboard, / search, visual selection.
    npm install
    #+end_src
 
-2. Start in development mode:
+2. Start in development mode (one-command launcher on Linux):
    #+begin_src bash
-   npm run dev
+   ./scripts/run.sh
    #+end_src
+   Equivalent: =npm run dev= — both apply the Linux =--no-sandbox --disable-gpu= flags.
 
 3. Set your vault path and open a board:
    - Press =Ctrl+,= to open settings
@@ -383,7 +384,8 @@ mouseless-kanban/
 │       ├── SearchBar.tsx   # / search bar
 │       └── ArchivePanel.tsx # gA archived cards panel
 ├── scripts/
-│   └── dev.mjs            # Dev launcher (Vite + Electron)
+│   ├── dev.mjs            # Dev launcher (Vite + Electron)
+│   └── run.sh             # One-command launcher (npm run dev)
 ├── plans-and-todos.org
 ├── bugs.org
 ├── README.org

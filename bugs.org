@@ -15,7 +15,7 @@
 - Symptom: zygote/GPU process crashes, shared memory ESRCH.
 - Cause: Kernel-level IPC namespace restriction — not fixable with Chromium flags.
 - Workaround: Run on a real desktop (Linux X11/Wayland, macOS, Windows).
-- The =npm run dev= script passes =--no-sandbox --disable-gpu= on Linux.
+- Just launch with =./scripts/run.sh= (or =npm run dev=) — both apply the Linux =--no-sandbox --disable-gpu= flags.
 - Dev script: =node scripts/dev.mjs= handles Vite + Electron with correct flags.
 
 ** Fixed
@@ -39,6 +39,12 @@
 
 *** [x] Folded lanes reset on every launch
 - Fix: Fold state persisted per board by lane name (=foldedByPath=) and restored after parse.
+- Note: Persisted state was still being wiped on launch — the persist effect (=useFile.ts=) ran before the restore effect (=App.tsx=) on the board's first render, writing =[]= to =foldedByPath=, which then cascaded into a fold/unfold oscillation (launch flicker) and a final wipe. Fixed by merging restore + persist into a single effect in =useFile.ts= that restores once per file and never persists before restore.
+
+*** [x] Launch flicker (white flash + fold/unfold oscillation)
+- File: =electron/main.ts=, =src/index.css=, =src/App.tsx=, =src/hooks/useFile.ts=
+- Cause: (1) No =backgroundColor= on the =BrowserWindow= (white before React mounts); (2) =body= background =var(--bg)= undefined before a =.theme-*= class mounts; (3) empty-state ("No file open") flashed during session restore; (4) fold restore/persist effect race (see above).
+- Fix: Theme-matched =backgroundColor= from settings; =var(--bg, #1a1b26)= fallback; render nothing until settings load; single combined fold restore/persist effect.
 
 *** [x] Command palette didn't close on outside click
 - Fix: Overlay =onClick= closes it (=src/components/CommandPalette.tsx=).

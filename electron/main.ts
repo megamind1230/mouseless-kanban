@@ -55,12 +55,20 @@ function appendLog(msg: string) {
   fs.appendFileSync(file, `[${new Date().toISOString()}] ${msg}\n`)
 }
 
+const THEME_BG: Record<string, string> = {
+  'tokyo-night': '#1a1b26',
+  'tokyo-storm': '#1f2335',
+  light: '#ffffff',
+}
+
 function createWindow() {
+  const settings = loadSettings()
   mainWindow = new BrowserWindow({
     width: 1200,
     height: 800,
     title: 'Mouseless Mindmap',
     frame: false,
+    backgroundColor: THEME_BG[settings.theme] || '#1a1b26',
     webPreferences: {
       preload: path.join(__dirname, '../preload/preload.js'),
       contextIsolation: true,
@@ -79,7 +87,7 @@ function createWindow() {
     }
   }
 
-  mainWindow.webContents.setZoomLevel(loadSettings().zoomLevel || 0)
+  mainWindow.webContents.setZoomLevel(settings.zoomLevel || 0)
 
   appendLog('Window created')
 }
