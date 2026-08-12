@@ -309,7 +309,7 @@ Kanban boards can also be plain =.org= files:
 ** Logs
 Logs are written to:
 #+begin_src
-~/magnus/mouseless-mindmap/logs/YYYY-MM-DD.log
+~/magnus/mouseless-kanban/logs/YYYY-MM-DD.log
 #+end_src
 Each log entry includes a timestamp. Useful for debugging IPC issues or file I/O errors.
 

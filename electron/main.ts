@@ -8,7 +8,7 @@ if (process.platform === 'linux') {
 
 let mainWindow: BrowserWindow | null = null
 
-const LOG_DIR = path.join(process.env.HOME || '', 'magnus', 'mouseless-mindmap', 'logs')
+const LOG_DIR = path.join(process.env.HOME || '', 'magnus', 'mouseless-kanban', 'logs')
 const SETTINGS_PATH = path.join(app.getPath('userData'), 'settings.json')
 
 interface AppSettings {
@@ -66,7 +66,7 @@ function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1200,
     height: 800,
-    title: 'Mouseless Mindmap',
+    title: 'Mouseless Kanban',
     frame: false,
     backgroundColor: THEME_BG[settings.theme] || '#1a1b26',
     webPreferences: {

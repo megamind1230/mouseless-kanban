@@ -1,5 +1,5 @@
 {
-  "name": "mouseless-mindmap",
+  "name": "mouseless-kanban",
   "version": "0.1.0",
   "description": "Keyboard-centric mindmap editor for Obsidian Kanban boards",
   "main": "out/main/main.js",

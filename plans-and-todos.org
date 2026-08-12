@@ -1,6 +1,6 @@
 * Mouseless Kanban — Build Plan
 ** DONE Phase 1 — Scaffold
-- [X] Create logs dir at ~/magnus/mouseless-mindmap/logs/
+- [X] Create logs dir at ~/magnus/mouseless-kanban/logs/
 - [X] Create .org files (plans-and-todos, bugs, README, changelog, LICENCE)
 - [X] Init npm project + install deps (electron, vite, react, typescript)
 - [X] electron-vite config (main + preload + renderer)
