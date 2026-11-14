@@ -138,45 +138,74 @@ function reducer(state: AppState, action: BoardAction): AppState {
       const prev = state.board!
       const b = clone(prev)
       const laneIdx = state.activeLane
-      const cardIdx = state.activeCard
       const lane = b.lanes[laneIdx]
-      if (!lane?.cards[cardIdx]) return state
+      if (!lane) return state
 
-      if (state.selectedIds.length > 0) {
+      // Boundary guard: no-op when there is no adjacent lane
+      if (action.direction === 'prev-lane' && laneIdx === 0) return state
+      if (action.direction === 'next-lane' && laneIdx === b.lanes.length - 1) return state
+
+      const cardIdx = state.activeCard
+      const selected = state.selectedIds.length > 0
+      if (!selected && !lane.cards[cardIdx]) return state
+      const activeId = lane.cards[cardIdx]?.id
+      const anchorId = state.visualAnchor !== null ? lane.cards[state.visualAnchor]?.id : null
+
+      if (selected) {
         const toMove = new Set(state.selectedIds)
-        const cards = lane.cards.filter(c => toMove.has(c.id))
+        const idxs = lane.cards.map((c, i) => toMove.has(c.id) ? i : -1).filter(i => i >= 0)
+        if (idxs.length === 0) return state
+        const first = idxs[0]
+        const last = idxs[idxs.length - 1]
+        const cards = idxs.map(i => lane.cards[i])
+        const origLen = lane.cards.length
+
         lane.cards = lane.cards.filter(c => !toMove.has(c.id))
+        let dest = lane
+        let destLaneIdx = laneIdx
+
         if (action.direction === 'up') {
-          const insertIdx = Math.max(0, cardIdx - 1)
-          lane.cards.splice(insertIdx, 0, ...cards)
+          if (first === 0) return state
+          lane.cards.splice(first - 1, 0, ...cards)
         } else if (action.direction === 'down') {
-          lane.cards.push(...cards)
+          if (last === origLen - 1) return state
+          lane.cards.splice(first + 1, 0, ...cards)
         } else {
-          const t = action.direction === 'prev-lane'
-            ? Math.max(0, laneIdx - 1)
-            : Math.min(b.lanes.length - 1, laneIdx + 1)
-          b.lanes[t].cards.push(...cards)
-          return { ...state, ...snap(state, prev), board: b, activeLane: t }
+          destLaneIdx = action.direction === 'prev-lane' ? laneIdx - 1 : laneIdx + 1
+          dest = b.lanes[destLaneIdx]
+          dest.cards.push(...cards)
         }
-        return { ...state, ...snap(state, prev), board: b }
+
+        const newActive = activeId ? dest.cards.findIndex(c => c.id === activeId) : -1
+        let visualAnchor: number | null = state.visualAnchor
+        if (visualAnchor !== null) {
+          const ai = anchorId ? dest.cards.findIndex(c => c.id === anchorId) : -1
+          visualAnchor = ai >= 0 ? ai : Math.max(0, newActive)
+        }
+        return {
+          ...state,
+          ...snap(state, prev),
+          board: b,
+          activeLane: destLaneIdx,
+          activeCard: newActive >= 0 ? newActive : Math.max(0, dest.cards.length - 1),
+          visualAnchor,
+        }
       }
 
       const [card] = lane.cards.splice(cardIdx, 1)
 
       if (action.direction === 'up') {
-        const t = Math.max(0, cardIdx - 1)
-        lane.cards.splice(t, 0, card)
-        return { ...state, ...snap(state, prev), board: b, activeCard: t }
+        if (cardIdx === 0) return state
+        lane.cards.splice(cardIdx - 1, 0, card)
+        return { ...state, ...snap(state, prev), board: b, activeCard: cardIdx - 1 }
       }
       if (action.direction === 'down') {
-        const t = Math.min(lane.cards.length, cardIdx + 1)
-        lane.cards.splice(t, 0, card)
-        return { ...state, ...snap(state, prev), board: b, activeCard: t }
+        if (cardIdx === lane.cards.length) return state
+        lane.cards.splice(cardIdx + 1, 0, card)
+        return { ...state, ...snap(state, prev), board: b, activeCard: cardIdx + 1 }
       }
       // prev-lane / next-lane
-      const t = action.direction === 'prev-lane'
-        ? Math.max(0, laneIdx - 1)
-        : Math.min(b.lanes.length - 1, laneIdx + 1)
+      const t = action.direction === 'prev-lane' ? laneIdx - 1 : laneIdx + 1
       b.lanes[t].cards.push(card)
       return { ...state, ...snap(state, prev), board: b, activeLane: t, activeCard: b.lanes[t].cards.length - 1 }
     }

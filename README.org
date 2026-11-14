@@ -2,14 +2,14 @@
 ** Overview
 A keyboard-centric desktop kanban app that edits .md and .org files compatible
 with Obsidian Kanban boards. Faster and mouseless alternative to the
-Obsidian kanban plugin. Vim-motions inspired — hjkl navigate, HJKL
+Obsidian kanban plugin. Vim-motions inspired — hjkl navigate, Alt+hjkl
 move cards, dd/yy/p clipboard, / search, visual selection.
 
 ** Screenshots
 [[./screenshots/kanban.png]]
 
 ** Features
-- Keyboard-first navigation (vim-like hjkl / HJKL / gg / G)
+- Keyboard-first navigation (vim-like hjkl / Alt+HJKL / gg / G)
 - Edit .md files in Obsidian Kanban format AND .org kanban boards
 - Quick switcher (=Alt+Q=): fuzzy-open an existing board or create a new one inline
 - Search cards with / (vim-like), n/N for next/prev match
@@ -17,7 +17,7 @@ move cards, dd/yy/p clipboard, / search, visual selection.
 - Create new boards in vault via quick switcher (=.md= / =.org=)
 - Lane management: rename (r), move left/right, delete (e menu)
 - Card editing: i/a to edit, gi to replace, o/O to add below/above
-- Multi-select: space (toggle), v (visual range), batch dd/yy/x/HJKL
+- Multi-select: space (toggle), v (visual range), batch dd/yy/x/Alt+HJKL
 - Move card to top/bottom/lane via command palette (Ctrl+P)
 - Ctrl+d / Ctrl+u for half-page navigation
 - Auto-save with dirty indicator (500ms debounce)
@@ -62,13 +62,13 @@ move cards, dd/yy/p clipboard, / search, visual selection.
 | Ctrl+d | Half-page down (5 cards)   |
 | Ctrl+u | Half-page up (5 cards)     |
 
-*** Move Cards (uppercase)
+*** Move Cards (Alt)
 | Key | Action                     |
 |-----+----------------------------|
-| H   | Move card to previous lane |
-| L   | Move card to next lane     |
-| K   | Move card up               |
-| J   | Move card down             |
+| Alt+H | Move card to previous lane |
+| Alt+L | Move card to next lane     |
+| Alt+K | Move card up               |
+| Alt+J | Move card down             |
 
 *** Lanes
 | Key    | Action                                |
@@ -85,7 +85,7 @@ move cards, dd/yy/p clipboard, / search, visual selection.
 *** Editing
 | Key         | Action                                 |
 |-------------+----------------------------------------|
-| i / a       | Edit focused card / create at end      |
+| i / a       | Edit card (caret start / end) / create |
 | gi          | Edit card (replace all text)           |
 | o           | New card below focused card            |
 | O           | New card above focused card            |
@@ -213,7 +213,7 @@ move cards, dd/yy/p clipboard, / search, visual selection.
    - =Ctrl+d= / =Ctrl+u= — half-page down/up (5 cards)
 
 5. Card editing:
-   - =i= or =a= — edit focused card (or create one if lane is empty)
+   - =i= — edit focused card (caret at start); =a= — caret at end (or create one if lane is empty)
    - =gi= — edit card, replacing all text
    - =o= — new card below focused card
    - =O= — new card above focused card
@@ -236,7 +236,7 @@ move cards, dd/yy/p clipboard, / search, visual selection.
    - =Space= — toggle individual card selection (multi-select)
    - =v= — enter visual mode (range select with j/k)
    - With cards selected: =d= (delete), =x= (toggle), =yy= (copy), =p= (paste)
-   - With cards selected: =H/J/K/L= (move batch to prev/next lane, up/down)
+   - With cards selected: =Alt+H/J/K/L= (move batch to prev/next lane, up/down)
    - With cards selected: == = sort alphabetically
    - =Esc= — clear selection
 
@@ -322,7 +322,7 @@ Each log entry includes a timestamp. Useful for debugging IPC issues or file I/O
 | Input method    | Keyboard-only (vim motions)               | Mouse + keyboard                        |
 | Performance     | Instant (native Electron app)             | Inside Obsidian (heavier startup)       |
 | File format     | Same .md (fully compatible)               | Same .md                                |
-| Multi-select    | Space / v visual mode, batch dd/yy/x/HJKL | Limited (click-drag, no batch ops)      |
+| Multi-select    | Space / v visual mode, batch dd/yy/x/Alt+HJKL | Limited (click-drag, no batch ops)      |
 | Search          | Vim-like / with n/N navigation            | Obsidian-wide Ctrl+F (not board-scoped) |
 | Lanes           | Fold, merge, keyboard move (Ctrl+H/L)     | Drag to reorder, no fold/merge          |
 | Cards           | i/a edit, o/O insert, dd delete, yy copy  | Click to edit, drag to reorder          |
@@ -367,7 +367,7 @@ mouseless-kanban/
 │   │   ├── links.ts       # URL extraction (gx open-link)
 │   │   └── commands.ts    # Command palette registry
 │   ├── hooks/
-│   │   ├── useKeys.ts     # Keyboard engine (hjkl/HJKL/dd/yy)
+│   │   ├── useKeys.ts     # Keyboard engine (hjkl/Alt+HJKL/dd/yy)
 │   │   └── useFile.ts     # File state, auto-save, vault, settings
 │   └── components/
 │       ├── Board.tsx       # Horizontal lane layout

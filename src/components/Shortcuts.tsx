@@ -22,10 +22,10 @@ const sections = [
   {
     title: 'Move Cards',
     shortcuts: [
-      ['H', 'Move card to previous lane'],
-      ['L', 'Move card to next lane'],
-      ['K', 'Move card up'],
-      ['J', 'Move card down'],
+      ['Alt+H', 'Move card to previous lane'],
+      ['Alt+L', 'Move card to next lane'],
+      ['Alt+K', 'Move card up'],
+      ['Alt+J', 'Move card down'],
     ]
   },
   {
@@ -44,7 +44,7 @@ const sections = [
     title: 'Editing',
     shortcuts: [
       ['i', 'Edit focused card (or create new card at end)'],
-      ['a', 'Edit focused card (same as i)'],
+      ['a', 'Edit focused card (caret at end)'],
       ['gi', 'Edit card (replace all text)'],
       ['o', 'New card below focused card'],
       ['O', 'New card above focused card'],
@@ -67,7 +67,7 @@ const sections = [
       ['Space', 'Toggle card selection (multi-select)'],
       ['v', 'Enter visual mode (range select with j/k)'],
       ['Escape', 'Clear selection'],
-      ['d / x / yy / p / H/J/K/L', 'Operate on all selected cards'],
+      ['d / x / yy / p / Alt+H/J/K/L', 'Operate on all selected cards'],
       ['=', 'Sort selected cards alphabetically'],
       ['Ctrl+a / Ctrl+x', 'Increment / decrement number in card title'],
     ]

@@ -34,7 +34,7 @@
 ** DONE Phase 5 — Keyboard Engine
 - [X] useKeys.ts: keymap registry, Normal/Insert mode FSM
 - [X] hjkl (lowercase) = navigate lanes/cards
-- [X] HJKL (uppercase) = move cards between lanes/positions
+- [X] HJKL (uppercase) = move cards between lanes/positions (rebound to Alt+H/J/K/L in Phase 15)
 - [X] i = edit focused card or create new card (lane empty)
 - [X] a = edit focused card (alias for i)
 - [X] gi = edit card with replace mode (clears text)
@@ -59,7 +59,7 @@
 - [X] Space = non-contiguous multi-select (toggle individual cards)
 - [X] v = visual mode (range select with j/k)
 - [X] Esc clears selection
-- [X] Batch dd/x/yy/p/HJKL on selected cards
+- [X] Batch dd/x/yy/p/HJKL on selected cards (HJKL rebinding → Alt+H/J/K/L in Phase 15)
 - [X] Selection persists after operations until Esc
 - [X] v preserves space-selected cards (merge)
 - [X] Multi-select move for all directions (up/down/prev-lane/next-lane)
@@ -154,6 +154,14 @@
 - [X] Body background fallback (=var(--bg, #1a1b26)=) so no white flash pre-mount
 - [X] Empty-state hidden until settings load (no "No file open" flash during session restore)
 - [X] Regression test for fold restore/persist
+
+** DONE Phase 15 — Keybinding Changes & Batch-Move Fixes
+- [X] =a= edits focused card with caret at end (was identical to =i=); =i= keeps caret at start
+- [X] Card moves rebound from =HJKL= (Shift) to =Alt+H/J/K/L=; Shift+H/J/K/L removed (=G= still jumps to last card)
+- [X] Visual/multi batch moves fixed: "down" moves block one position (was: to bottom of lane), "up" insert index no longer computed from stale cursor
+- [X] Lane moves at first/last lane are no-ops (was: reordered selection to end of same lane)
+- [X] =activeCard= / =visualAnchor= follow moved cards by id — repeated moves and post-move =j/k= extension work correctly
+- [X] 111 tests passing, TypeScript clean
 
 ** frozen/later
 *** Views & UI

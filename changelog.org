@@ -1,4 +1,14 @@
 * Changelog
+** [2026-11-15] — Visual-mode batch move fixes
+- Fixed =Alt+H/J/K/L= in visual/multi selection: batch "down" no longer sends cards to the bottom of the lane (moves down one position), batch "up" no longer computes its insert index from the stale cursor position
+- Lane moves at the edge (first/last lane) are now no-ops instead of reordering the selection to the end of the same lane
+- Cursor (=activeCard=) and visual anchor now follow the moved cards (tracked by id), so repeated moves keep working and =j/k= selection extension stays correct afterwards
+- Single-card up/down at lane edges are no-ops (no junk undo entries)
+
+** [2026-11-14] — Keybinding changes
+- =a= now places the caret at the end of the card title when editing (=i= keeps caret at start)
+- Card moves rebound from =HJKL= (Shift) to =Alt+H/J/K/L= — Shift+H/J/K/L no longer move cards (=G= still jumps to last card)
+
 ** [2026-08-09] — Launch Fixes
 - Folded-lane state restores reliably: single restore+persist effect in =useFile.ts= (previously two effects raced on first load — persist wrote =[]= before restore applied, wiping saved folds and causing a fold/unfold launch flicker)
 - Window opens theme-matched: =backgroundColor= from settings in =electron/main.ts= (no white flash before React mounts)

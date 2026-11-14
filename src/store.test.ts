@@ -243,6 +243,19 @@ describe('reducer', () => {
   })
 
   describe('MOVE_CARD', () => {
+    const fourCards = (): Board => ({
+      ...makeBoard(),
+      lanes: [
+        { id: 'l1', name: 'Todo', cards: [
+          { id: 'c1', title: 'Card 1', status: 'todo' as const },
+          { id: 'c2', title: 'Card 2', status: 'todo' as const },
+          { id: 'c3', title: 'Card 3', status: 'todo' as const },
+          { id: 'c4', title: 'Card 4', status: 'todo' as const },
+        ]},
+        { id: 'l2', name: 'Done', cards: [] },
+      ],
+    })
+
     it('moves card up', () => {
       const s = stateWith(makeBoard(), { activeLane: 0, activeCard: 1 })
       const result = reducer(s, { type: 'MOVE_CARD', direction: 'up' })
@@ -258,6 +271,16 @@ describe('reducer', () => {
       expect(result.board!.lanes[0].cards[1].title).toBe('Card 1')
     })
 
+    it('does nothing when moving up at top of lane', () => {
+      const s = stateWith(makeBoard(), { activeLane: 0, activeCard: 0 })
+      expect(reducer(s, { type: 'MOVE_CARD', direction: 'up' })).toBe(s)
+    })
+
+    it('does nothing when moving down at bottom of lane', () => {
+      const s = stateWith(makeBoard(), { activeLane: 0, activeCard: 1 })
+      expect(reducer(s, { type: 'MOVE_CARD', direction: 'down' })).toBe(s)
+    })
+
     it('moves card to previous lane', () => {
       const s = stateWith(makeBoard(), { activeLane: 1, activeCard: 0 })
       const result = reducer(s, { type: 'MOVE_CARD', direction: 'prev-lane' })
@@ -268,6 +291,123 @@ describe('reducer', () => {
 
     it('moves card to next lane', () => {
       const s = stateWith(makeBoard(), { activeLane: 0, activeCard: 0 })
+      const result = reducer(s, { type: 'MOVE_CARD', direction: 'next-lane' })
+      expect(result.board!.lanes[0].cards).toHaveLength(1)
+      expect(result.board!.lanes[1].cards).toHaveLength(2)
+      expect(result.activeLane).toBe(1)
+    })
+
+    it('does nothing when moving to previous lane from first lane', () => {
+      const s = stateWith(makeBoard(), { activeLane: 0, activeCard: 0 })
+      expect(reducer(s, { type: 'MOVE_CARD', direction: 'prev-lane' })).toBe(s)
+    })
+
+    it('does nothing when moving to next lane from last lane', () => {
+      const s = stateWith(makeBoard(), { activeLane: 1, activeCard: 0 })
+      expect(reducer(s, { type: 'MOVE_CARD', direction: 'next-lane' })).toBe(s)
+    })
+
+    it('batch down moves block down one position, not to bottom', () => {
+      const s = stateWith(fourCards(), { activeLane: 0, activeCard: 1, selectedIds: ['c1', 'c2'], selectionMode: 'multi' })
+      const result = reducer(s, { type: 'MOVE_CARD', direction: 'down' })
+      expect(result.board!.lanes[0].cards.map(c => c.title)).toEqual(['Card 3', 'Card 1', 'Card 2', 'Card 4'])
+    })
+
+    it('repeated batch down moves block twice', () => {
+      const s = stateWith(fourCards(), { activeLane: 0, activeCard: 1, selectedIds: ['c1', 'c2'], selectionMode: 'multi' })
+      const r1 = reducer(s, { type: 'MOVE_CARD', direction: 'down' })
+      const r2 = reducer(r1, { type: 'MOVE_CARD', direction: 'down' })
+      expect(r2.board!.lanes[0].cards.map(c => c.title)).toEqual(['Card 3', 'Card 4', 'Card 1', 'Card 2'])
+    })
+
+    it('batch up moves block up one position, not to top', () => {
+      const s = stateWith(fourCards(), { activeLane: 0, activeCard: 3, selectedIds: ['c3', 'c4'], selectionMode: 'multi' })
+      const result = reducer(s, { type: 'MOVE_CARD', direction: 'up' })
+      expect(result.board!.lanes[0].cards.map(c => c.title)).toEqual(['Card 1', 'Card 3', 'Card 4', 'Card 2'])
+    })
+
+    it('batch up at top of lane does nothing', () => {
+      const s = stateWith(fourCards(), { activeLane: 0, activeCard: 0, selectedIds: ['c1', 'c2'], selectionMode: 'multi' })
+      expect(reducer(s, { type: 'MOVE_CARD', direction: 'up' })).toBe(s)
+    })
+
+    it('batch down at bottom of lane does nothing', () => {
+      const s = stateWith(fourCards(), { activeLane: 0, activeCard: 3, selectedIds: ['c3', 'c4'], selectionMode: 'multi' })
+      expect(reducer(s, { type: 'MOVE_CARD', direction: 'down' })).toBe(s)
+    })
+
+    it('batch lane move keeps cursor on the active card and works repeatedly', () => {
+      // selection at end of a long lane moving to an empty lane: stale index would break subsequent moves
+      const s = stateWith(fourCards(), { activeLane: 0, activeCard: 3, selectedIds: ['c3', 'c4'], selectionMode: 'multi' })
+      const r1 = reducer(s, { type: 'MOVE_CARD', direction: 'next-lane' })
+      expect(r1.activeLane).toBe(1)
+      expect(r1.board!.lanes[1].cards.map(c => c.title)).toEqual(['Card 3', 'Card 4'])
+      expect(r1.board!.lanes[1].cards[r1.activeCard].title).toBe('Card 4')
+      // move the block back: cursor follows again, second move still works
+      const r2 = reducer(r1, { type: 'MOVE_CARD', direction: 'prev-lane' })
+      expect(r2.activeLane).toBe(0)
+      expect(r2.activeCard).toBe(3)
+      expect(r2.board!.lanes[0].cards.map(c => c.title)).toEqual(['Card 1', 'Card 2', 'Card 3', 'Card 4'])
+      const r3 = reducer(r2, { type: 'MOVE_CARD', direction: 'down' })
+      expect(r3).toBe(r2) // block already at bottom
+      const r4 = reducer(r2, { type: 'MOVE_CARD', direction: 'up' })
+      expect(r4.board!.lanes[0].cards.map(c => c.title)).toEqual(['Card 1', 'Card 3', 'Card 4', 'Card 2'])
+      expect(r4.activeCard).toBe(2)
+    })
+
+    it('batch move keeps selection intact', () => {
+      const s = stateWith(fourCards(), { activeLane: 0, activeCard: 0, selectedIds: ['c1', 'c2'], selectionMode: 'multi' })
+      const result = reducer(s, { type: 'MOVE_CARD', direction: 'down' })
+      expect(result.selectedIds).toEqual(['c1', 'c2'])
+    })
+
+    it('visual anchor follows the moved anchor card', () => {
+      // v on c2 (anchor 1), j extends to c3 (cursor 2), then move down
+      const s = stateWith(fourCards(), { activeLane: 0, activeCard: 2, selectedIds: ['c2', 'c3'], selectionMode: 'visual', visualAnchor: 1 })
+      const result = reducer(s, { type: 'MOVE_CARD', direction: 'down' })
+      // block c2,c3 down one: [c1, c4, c2, c3]
+      expect(result.board!.lanes[0].cards.map(c => c.title)).toEqual(['Card 1', 'Card 4', 'Card 2', 'Card 3'])
+      expect(result.activeCard).toBe(3) // cursor still on c3
+      expect(result.visualAnchor).toBe(2) // anchor still on c2
+    })
+
+    it('visual selection can extend correctly after a move', () => {
+      const s = stateWith(fourCards(), { activeLane: 0, activeCard: 2, selectedIds: ['c2', 'c3'], selectionMode: 'visual', visualAnchor: 1 })
+      const moved = reducer(s, { type: 'MOVE_CARD', direction: 'down' })
+      // after move: [c1, c4, c2, c3], anchor=2 (c2), cursor=3 (c3)
+      const extended = reducer(moved, { type: 'SET_ACTIVE_CARD', index: 3 })
+      const r2 = reducer({ ...extended, selectionMode: 'visual', visualAnchor: 2 }, { type: 'EXTEND_VISUAL' })
+      expect(r2.selectedIds).toContain('c2')
+      expect(r2.selectedIds).toContain('c3')
+      expect(r2.selectedIds).toHaveLength(2)
+    })
+  })
+
+  describe('MOVE_CARD with selection', () => {
+    it('moves selected cards up', () => {
+      const s = stateWith(makeBoard(), { activeLane: 0, activeCard: 1, selectedIds: ['c2'], selectionMode: 'multi' })
+      const result = reducer(s, { type: 'MOVE_CARD', direction: 'up' })
+      expect(result.board!.lanes[0].cards[0].title).toBe('Card 2')
+      expect(result.board!.lanes[0].cards[1].title).toBe('Card 1')
+    })
+
+    it('moves selected cards down', () => {
+      const s = stateWith(makeBoard(), { activeLane: 0, activeCard: 0, selectedIds: ['c1'], selectionMode: 'multi' })
+      const result = reducer(s, { type: 'MOVE_CARD', direction: 'down' })
+      expect(result.board!.lanes[0].cards[0].title).toBe('Card 2')
+      expect(result.board!.lanes[0].cards[1].title).toBe('Card 1')
+    })
+
+    it('moves selected cards to previous lane', () => {
+      const s = stateWith(makeBoard(), { activeLane: 1, activeCard: 0, selectedIds: ['c3'], selectionMode: 'multi' })
+      const result = reducer(s, { type: 'MOVE_CARD', direction: 'prev-lane' })
+      expect(result.board!.lanes[0].cards).toHaveLength(3)
+      expect(result.board!.lanes[1].cards).toHaveLength(0)
+      expect(result.activeLane).toBe(0)
+    })
+
+    it('moves selected cards to next lane', () => {
+      const s = stateWith(makeBoard(), { activeLane: 0, activeCard: 0, selectedIds: ['c1'], selectionMode: 'multi' })
       const result = reducer(s, { type: 'MOVE_CARD', direction: 'next-lane' })
       expect(result.board!.lanes[0].cards).toHaveLength(1)
       expect(result.board!.lanes[1].cards).toHaveLength(2)

@@ -85,6 +85,19 @@ export function useKeys({ showPicker, setShowPicker, dispatch, setShowSettings, 
         return
       }
 
+      // Alt+hjkl = move cards
+      if (e.altKey && !e.ctrlKey) {
+        if (card || s.selectedIds.length > 0) {
+          switch (e.key.toLowerCase()) {
+            case 'h': e.preventDefault(); dispatch({ type: 'MOVE_CARD', direction: 'prev-lane' }); return
+            case 'l': e.preventDefault(); dispatch({ type: 'MOVE_CARD', direction: 'next-lane' }); return
+            case 'j': e.preventDefault(); dispatch({ type: 'MOVE_CARD', direction: 'down' }); return
+            case 'k': e.preventDefault(); dispatch({ type: 'MOVE_CARD', direction: 'up' }); return
+          }
+        }
+        return
+      }
+
       // Prefix checks: last key was 'g' or 'z' within 500ms
       if (!e.ctrlKey && lastKey.current === 'z' && lastTime.current > 0 && Date.now() - lastTime.current < 500) {
         if (e.key === 'a') { e.preventDefault(); lastKey.current = null; dispatch({ type: 'TOGGLE_LANE_FOLD' }); return }
@@ -156,13 +169,9 @@ export function useKeys({ showPicker, setShowPicker, dispatch, setShowSettings, 
         e.preventDefault(); dispatch({ type: 'CLEAR_SELECTION' }); return
       }
 
-      // Uppercase = move cards
+      // Uppercase = jump / edit
       if (!e.ctrlKey && e.shiftKey && card) {
         switch (e.key) {
-          case 'H': e.preventDefault(); dispatch({ type: 'MOVE_CARD', direction: 'prev-lane' }); return
-          case 'L': e.preventDefault(); dispatch({ type: 'MOVE_CARD', direction: 'next-lane' }); return
-          case 'J': e.preventDefault(); dispatch({ type: 'MOVE_CARD', direction: 'down' }); return
-          case 'K': e.preventDefault(); dispatch({ type: 'MOVE_CARD', direction: 'up' }); return
           case 'G': e.preventDefault(); dispatch({ type: 'SET_ACTIVE_CARD', index: (lane?.cards.length ?? 1) - 1 }); return
         }
       }
@@ -204,7 +213,7 @@ export function useKeys({ showPicker, setShowPicker, dispatch, setShowSettings, 
           case 'i': {
             e.preventDefault()
             if (lane && card) {
-              window.dispatchEvent(new Event('edit-card'))
+              window.dispatchEvent(new CustomEvent('edit-card', { detail: { append: e.key === 'a' } }))
             } else if (lane) {
               dispatch({ type: 'ADD_CARD', laneId: lane.id, position: 'end' })
             }

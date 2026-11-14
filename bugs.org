@@ -19,6 +19,11 @@
 - Dev script: =node scripts/dev.mjs= handles Vite + Electron with correct flags.
 
 ** Fixed
+*** [x] Visual-mode batch moves (Alt+HJKL) moved items to wrong places or stopped after one move
+- File: =src/store.tsx= (=MOVE_CARD=), =src/hooks/useKeys.ts=
+- Cause: Batch "down" pushed the selection to the bottom of the lane instead of moving it one position; batch "up" computed its insert index from =activeCard= before removal (wrong index after removal); no boundary guard for lane moves (first/last lane clamped =t= to the same lane, reordering selection to its end); =activeCard= / =visualAnchor= not updated after a move, so the cursor could point outside the lane (all subsequent moves no-op) and =EXTEND_VISUAL= recomputed the selection from a stale anchor index.
+- Fix: Block-relative one-step up/down using the selection's first/last index; lane moves at edges return state unchanged; =activeCard= and =visualAnchor= re-derived by card id after every move; alt-block in useKeys also dispatches when a selection exists.
+
 *** [x] Search n/N keys were swallowed while typing in search box
 - File: =src/components/SearchBar.tsx=
 - Cause: Global keydown handler captured n/N for next/previous match even with the search input focused.
