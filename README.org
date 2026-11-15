@@ -7,6 +7,7 @@ move cards, dd/yy/p clipboard, / search, visual selection.
 
 ** Screenshots
 [[./screenshots/kanban.png]]
+[[./screenshots/kanban-wide.png]]
 
 ** Features
 - Keyboard-first navigation (vim-like hjkl / Alt+HJKL / gg / G)
