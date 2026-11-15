@@ -5,6 +5,10 @@ import CounterBadge from './CounterBadge'
 import LaneMenu from './LaneMenu'
 import type { Lane as LaneType } from '../core/types'
 
+// ponytail: session-only per-lane scroll memory — lives outside React so it
+// survives fold/unfold and remounts without touching the store
+const scrollPositions = new Map<string, number>()
+
 interface LaneProps {
   lane: LaneType
   isActive: boolean
@@ -25,12 +29,18 @@ export default function Lane({ lane, isActive, counterStyle = 'pending' }: LaneP
   const pendingCount = lane.cards.filter(c => c.status !== 'done').length
   const totalCount = lane.cards.length
 
-  // Scroll active card into view (vertical) when navigating with j/k etc.
+  // Restore per-lane scroll after (re)mount/unfold, then keep the active card
+  // in view when navigating with j/k etc. One effect so the visibility check
+  // runs against the restored scroll position.
   useEffect(() => {
-    if (!isActive) return
+    if (folded) return
     const container = laneCardsRef.current
-    const activeEl = container?.querySelector('.card--active')
-    if (!container || !activeEl) return
+    if (!container) return
+    const saved = scrollPositions.get(lane.id)
+    if (saved !== undefined && container.scrollTop === 0) container.scrollTop = saved
+    if (!isActive) return
+    const activeEl = container.querySelector('.card--active')
+    if (!activeEl) return
     const pad = 8
     const cr = container.getBoundingClientRect()
     const ar = (activeEl as HTMLElement).getBoundingClientRect()
@@ -39,7 +49,12 @@ export default function Lane({ lane, isActive, counterStyle = 'pending' }: LaneP
     } else if (ar.bottom > cr.bottom - pad) {
       container.scrollTop += ar.bottom - (cr.bottom - pad)
     }
-  }, [activeCard, isActive])
+  }, [activeCard, isActive, folded, lane.id])
+
+  function handleScroll() {
+    const container = laneCardsRef.current
+    if (container) scrollPositions.set(lane.id, container.scrollTop)
+  }
 
   // Rename handling
   useEffect(() => {
@@ -143,7 +158,7 @@ export default function Lane({ lane, isActive, counterStyle = 'pending' }: LaneP
         />
       )}
       {!folded && (
-        <div className="lane-cards" ref={laneCardsRef}>
+        <div className="lane-cards" ref={laneCardsRef} onScroll={handleScroll}>
           {lane.cards.map((card, i) => (
             <Card
               key={card.id}

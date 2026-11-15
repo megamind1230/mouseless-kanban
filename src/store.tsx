@@ -5,6 +5,7 @@ const initialState: AppState = {
   board: null,
   activeLane: 0,
   activeCard: 0,
+  laneCursors: {},
   mode: 'normal',
   clipboard: [],
   history: [],
@@ -49,8 +50,20 @@ function reducer(state: AppState, action: BoardAction): AppState {
     case 'SET_FOLDED_LANES':
       return { ...state, foldedLanes: action.ids }
 
-    case 'SET_ACTIVE_LANE':
-      return { ...state, activeLane: action.index, activeCard: 0, selectedIds: [], selectionMode: 'none', visualAnchor: null, preVisualIds: [] }
+    case 'SET_ACTIVE_LANE': {
+      // Per-lane cursor memory: save the lane we're leaving, restore the lane
+      // we're entering (clamped to its cards; 0 if never visited). Keeps lane
+      // scroll intact since the cursor card stays where the user left it.
+      const cursors = { ...state.laneCursors }
+      const prevLane = state.board?.lanes[state.activeLane]
+      if (prevLane) cursors[prevLane.id] = state.activeCard
+      const target = state.board?.lanes[action.index]
+      const saved = target ? cursors[target.id] : undefined
+      const card = saved !== undefined
+        ? Math.max(0, Math.min(saved, target!.cards.length - 1))
+        : 0
+      return { ...state, laneCursors: cursors, activeLane: action.index, activeCard: card, selectedIds: [], selectionMode: 'none', visualAnchor: null, preVisualIds: [] }
+    }
 
     case 'SET_ACTIVE_CARD':
       return { ...state, activeCard: action.index }

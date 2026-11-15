@@ -78,6 +78,7 @@ export interface AppState {
   board: Board | null
   activeLane: number
   activeCard: number
+  laneCursors: Record<string, number>
   mode: 'normal' | 'insert'
   clipboard: Card[]
   history: { board: Board; activeLane: number; activeCard: number }[]

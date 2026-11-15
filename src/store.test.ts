@@ -51,11 +51,47 @@ describe('reducer', () => {
   })
 
   describe('navigation', () => {
-    it('SET_ACTIVE_LANE moves to lane', () => {
-      const s = stateWith(makeBoard(), { activeLane: 0 })
+    it('SET_ACTIVE_LANE saves leaving lane cursor and restores entering lane cursor', () => {
+      const board = makeBoard()
+      board.lanes[1].cards.push({ id: 'c4', title: 'Card 4', status: 'todo' as const })
+      const s = stateWith(board, { activeLane: 0, activeCard: 1, laneCursors: { l2: 1 } })
       const result = reducer(s, { type: 'SET_ACTIVE_LANE', index: 1 })
-      expect(result.activeLane).toBe(1)
-      expect(result.activeCard).toBe(0) // resets card
+      expect(result.laneCursors.l1).toBe(1)
+      expect(result.activeCard).toBe(1) // restored from l2's saved cursor
+      // round trip: going back to l1 restores its saved cursor
+      const back = reducer(result, { type: 'SET_ACTIVE_LANE', index: 0 })
+      expect(back.activeCard).toBe(1)
+      expect(back.laneCursors.l2).toBe(1)
+    })
+
+    it('SET_ACTIVE_LANE defaults to first card for unvisited lanes', () => {
+      const s = stateWith(makeBoard(), { activeLane: 0, activeCard: 1 })
+      const result = reducer(s, { type: 'SET_ACTIVE_LANE', index: 1 })
+      expect(result.activeCard).toBe(0)
+      expect(result.laneCursors.l1).toBe(1)
+    })
+
+    it('SET_ACTIVE_LANE clamps saved cursor to target lane length', () => {
+      const s = stateWith(makeBoard(), { activeLane: 0, activeCard: 0, laneCursors: { l2: 5 } })
+      const result = reducer(s, { type: 'SET_ACTIVE_LANE', index: 1 })
+      expect(result.activeCard).toBe(0) // l2 has 1 card
+    })
+
+    it('SET_ACTIVE_LANE clamps saved cursor to 0 for empty lanes', () => {
+      const board = makeBoard()
+      board.lanes[1].cards = []
+      const s = stateWith(board, { activeLane: 0, activeCard: 0, laneCursors: { l2: 3 } })
+      const result = reducer(s, { type: 'SET_ACTIVE_LANE', index: 1 })
+      expect(result.activeCard).toBe(0)
+    })
+
+    it('SET_ACTIVE_LANE clears selection and visual mode', () => {
+      const s = stateWith(makeBoard(), { activeLane: 0, selectedIds: ['c1'], selectionMode: 'multi', visualAnchor: 0, preVisualIds: ['c1'] })
+      const result = reducer(s, { type: 'SET_ACTIVE_LANE', index: 1 })
+      expect(result.selectedIds).toEqual([])
+      expect(result.selectionMode).toBe('none')
+      expect(result.visualAnchor).toBeNull()
+      expect(result.preVisualIds).toEqual([])
     })
 
     it('SET_ACTIVE_CARD moves to card', () => {
